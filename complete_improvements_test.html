@@ -103,14 +103,15 @@
             <h2>🎮 Complete Improvements Test</h2>
             
             <div class="improvement-section">
-                <div class="improvement-title">🎵 Clean Background Music</div>
-                <div id="audioStatus" class="improvement-status status-pending">Testing clean background music...</div>
+                <div class="improvement-title">🎵 Real Audio System</div>
+                <div id="audioStatus" class="improvement-status status-pending">Loading audio system...</div>
                 <div class="feature-list">
-                    • Clean sine wave melodies<br>
-                    • Harmonic layers (A3, E4)<br>
-                    • Bass foundation (A2)<br>
-                    • Gentle pad background<br>
-                    • No more noise - pure music!
+                    • Tries to load real audio files first<br>
+                    • Falls back to clean synthetic sounds<br>
+                    • Supports MP3/WAV formats<br>
+                    • 3D positional audio<br>
+                    • Much better than previous noise!<br>
+                    • See assets/audio/README.md for adding files
                 </div>
             </div>
             
@@ -153,22 +154,23 @@
             <div class="controls">
                 <div style="color: #2196F3; font-weight: bold; margin-bottom: 8px;">🎮 Test All Features:</div>
                 <div style="font-size: 12px;">
-                    <strong>🎵 Music:</strong> Listen for clean background music<br>
+                    <strong>🎵 Audio:</strong> Real audio files + fallback sounds<br>
                     <strong>⚔️ Attack Status:</strong> Check top right corner indicator<br>
                     <strong>🚶 Walking:</strong> Use WASD to see enhanced leg & hand animations<br>
                     <strong>🔨 Weapon:</strong> Left click to see hammer attacks<br>
-                    <strong>🌲 Boundaries:</strong> Try walking to forest edge
+                    <strong>🌲 Boundaries:</strong> Try walking to forest edge<br>
+                    <strong>📁 Audio Files:</strong> See assets/audio/README.md to add real sounds
                 </div>
             </div>
             
-            <div style="margin-top: 15px; padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 4px solid #FFC107; border-radius: 5px;">
-                <div style="color: #FFC107; font-weight: bold; margin-bottom: 5px;">🔍 Latest Improvements:</div>
-                <div style="font-size: 11px; line-height: 1.4;">
-                    ✨ Attack status moved to top right corner<br>
-                    🎵 Replaced noisy audio with clean musical background<br>
-                    🚶 Enhanced walking with realistic leg lifting & hand movement<br>
-                    🔨 Improved weapon sway and body physics<br>
-                    💫 Smooth interpolation for all animations
+            <div style="margin-top: 15px; padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 4px solid #FFC107;">
+                <div style="color: #FF8F00; font-weight: bold; margin-bottom: 8px;">🆕 Latest Improvements:</div>
+                <div style="font-size: 12px; color: #333;">
+                    <strong>✅ Attack Status:</strong> Moved to top right corner<br>
+                    <strong>✅ Real Audio System:</strong> Loads real audio files, falls back to clean sounds<br>
+                    <strong>✅ Enhanced Walking:</strong> Dramatic leg & hand animations with physics<br>
+                    <strong>✅ Audio Assets:</strong> Created assets/audio/ directory with README<br>
+                    <strong>✅ Error Fixed:</strong> removeEntity function issue resolved
                 </div>
             </div>
         </div>
@@ -228,9 +230,12 @@
         function testAudioSystem() {
             if (window.game?.gameEngine?.audioManager && !audioInitialized) {
                 const audioManager = window.game.gameEngine.audioManager;
-                if (audioManager.currentMusicSource) {
+                if (audioManager.audioBuffers && audioManager.audioBuffers.size > 0) {
                     audioInitialized = true;
-                    updateStatus('audioStatus', 'pass', 'Clean background music active! 🎵');
+                    const bufferCount = audioManager.audioBuffers.size;
+                    updateStatus('audioStatus', 'pass', `Audio system loaded! ${bufferCount} sounds ready 🎵`);
+                } else if (audioManager.audioContext) {
+                    updateStatus('audioStatus', 'pending', 'Audio context ready, loading sounds...');
                 }
             }
         }
@@ -281,7 +286,7 @@
         
         // Initial status updates
         setTimeout(() => {
-            updateStatus('audioStatus', 'pending', 'Initializing clean music...');
+            updateStatus('audioStatus', 'pending', 'Initializing real audio system...');
             updateStatus('cooldownStatus', 'pending', 'Setting up top right indicator...');
             updateStatus('movementStatus', 'pending', 'Loading enhanced leg & hand animations...');
             updateStatus('weaponStatus', 'pending', 'Creating weapon system...');
@@ -290,13 +295,13 @@
         // Test instructions after 5 seconds
         setTimeout(() => {
             if (!audioInitialized) {
-                updateStatus('audioStatus', 'pending', 'Click anywhere to start clean music');
+                updateStatus('audioStatus', 'pending', 'Click anywhere to start audio (fallback sounds ready)');
             }
             if (!cooldownDetected) {
                 updateStatus('cooldownStatus', 'pending', 'Look for indicator in top right corner');
             }
             if (!enhancedMovementDetected) {
-                updateStatus('movementStatus', 'pending', 'Move with WASD to test leg & hand animations');
+                updateStatus('movementStatus', 'pending', 'Use WASD to test enhanced walking animations');
             }
             if (!weaponAttackDetected) {
                 updateStatus('weaponStatus', 'pending', 'Left click to test weapon attacks');
