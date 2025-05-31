@@ -1,6 +1,104 @@
-# Iron Golem Survival - 3D Browser Game
+# 3D Iron Golem Survival Game
 
-A serverless 3D browser-based survival game where you control an Iron Golem from Minecraft in a procedurally generated village environment. Built with Three.js and WebGL, this game runs entirely client-side without requiring any backend server.
+A browser-based 3D survival game featuring an Iron Golem character with real audio, enhanced animations, and weapon-based combat.
+
+## 🎮 How to Play
+
+### ⚠️ IMPORTANT: Use HTTP Server (Not File://)
+The game **must** be run through an HTTP server to load audio files properly. Opening `index.html` directly in the browser will cause CORS errors.
+
+### 🚀 Quick Start (Windows)
+1. **Double-click `start_game.bat`** - This will automatically:
+   - Start the HTTP server
+   - Open the game in your browser
+   - Display the server URL
+
+### 🖥️ Manual Start (Any OS)
+1. **Open terminal/command prompt** in the game directory
+2. **Start HTTP server**: `python -m http.server 8000`
+3. **Open browser** and go to: `http://localhost:8000`
+
+### 🎵 Audio Files
+The game includes real MP3 audio files in `assets/audio/`:
+- Forest ambience background music
+- Realistic footstep sounds
+- Weapon attack effects
+- Metal impact sounds
+- Pickup/notification sounds
+
+## 🎯 Game Features
+
+### 🤖 Iron Golem Character
+- Detailed 3D model with body parts, glowing eyes, decorative vines
+- Enhanced walking animations with realistic leg and hand movement
+- Iron hammer weapon with multi-phase attack animations
+
+### ⚔️ Combat System
+- Weapon-based attacks with visual effects
+- Attack cooldown indicator (top right corner)
+- Enemy health visualization with damage effects
+- Screen shake and particle effects
+
+### 🌍 World & Environment
+- Procedurally generated village environment
+- Forest boundaries with dense tree walls
+- Wave-based enemy spawning system
+- Resource collection and upgrade system
+
+### 🎵 Professional Audio
+- Real MP3 audio files for all sound effects
+- 3D positional audio system
+- Forest ambience background music
+- Authentic weapon and impact sounds
+
+## 🎮 Controls
+- **WASD**: Move Iron Golem
+- **Mouse**: Camera control (click to lock pointer)
+- **Left Click**: Attack with hammer
+- **ESC**: Release mouse pointer
+
+## 🔧 Technical Requirements
+- Modern web browser with WebGL support
+- Python 3.x (for HTTP server)
+- Audio files in `assets/audio/` directory
+
+## 🐛 Troubleshooting
+
+### Audio Not Working?
+- ✅ **Use HTTP server**: `python -m http.server 8000`
+- ❌ **Don't open file directly**: Avoid `file://` URLs
+- 🔊 **Check console**: Look for audio loading messages
+- 🎵 **Verify files**: Ensure MP3 files are in `assets/audio/`
+
+### Performance Issues?
+- Lower browser zoom level
+- Close other browser tabs
+- Check browser console for errors
+
+## 📁 Project Structure
+```
+3d-iron-golem/
+├── assets/audio/          # Real MP3 audio files
+├── src/                   # Game source code
+│   ├── core/             # Core systems (AudioManager, GameEngine)
+│   ├── entities/         # Game entities (IronGolem, Enemy)
+│   ├── systems/          # Game systems (Combat, Physics)
+│   ├── world/            # World generation
+│   └── ui/               # User interface
+├── index.html            # Main game file
+├── start_game.bat        # Windows launcher
+└── README.md             # This file
+```
+
+## 🎉 Latest Features
+- ✅ Real MP3 audio files with professional sound effects
+- ✅ Enhanced walking animations with realistic physics
+- ✅ Attack cooldown indicator moved to top right corner
+- ✅ Weapon-based combat with iron hammer
+- ✅ Forest boundaries and environmental details
+- ✅ Enemy health visualization and damage effects
+
+Enjoy the enhanced 3D Iron Golem survival experience! 🎮
 
 ## 🎮 Game Features
 
