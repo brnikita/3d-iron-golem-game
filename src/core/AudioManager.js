@@ -214,172 +214,94 @@ class AudioManager {
     }
 
     createBackgroundMusic() {
-        // Create peaceful nature ambience
+        // Create simple, pleasant background music instead of noisy nature sounds
         this.createNatureAmbience();
     }
 
     createNatureAmbience() {
-        // Create multiple layers for rich nature soundscape
+        // Create simple, pleasant background music instead of noisy nature sounds
         const layers = [];
         
-        // Layer 1: Gentle wind (filtered noise)
-        const windNoise = this.audioContext.createBufferSource();
-        const windBuffer = this.createWindSound();
-        const windGain = this.audioContext.createGain();
-        const windFilter = this.audioContext.createBiquadFilter();
+        // Layer 1: Main melody (gentle sine wave)
+        const melody = this.audioContext.createOscillator();
+        const melodyGain = this.audioContext.createGain();
         
-        windNoise.buffer = windBuffer;
-        windNoise.loop = true;
-        windFilter.type = 'lowpass';
-        windFilter.frequency.setValueAtTime(400, this.audioContext.currentTime);
-        windGain.gain.setValueAtTime(0.15, this.audioContext.currentTime);
+        melody.type = 'sine';
+        melody.frequency.setValueAtTime(220, this.audioContext.currentTime); // A3
+        melodyGain.gain.setValueAtTime(0.1, this.audioContext.currentTime);
         
-        windNoise.connect(windFilter);
-        windFilter.connect(windGain);
-        windGain.connect(this.musicGain);
-        windNoise.start();
-        layers.push({ source: windNoise, gain: windGain });
+        melody.connect(melodyGain);
+        melodyGain.connect(this.musicGain);
+        melody.start();
+        layers.push({ source: melody, gain: melodyGain });
         
-        // Layer 2: Gentle harmonic drone (peaceful base)
-        const drone1 = this.audioContext.createOscillator();
-        const drone2 = this.audioContext.createOscillator();
-        const droneGain = this.audioContext.createGain();
+        // Layer 2: Harmony (perfect fifth)
+        const harmony = this.audioContext.createOscillator();
+        const harmonyGain = this.audioContext.createGain();
         
-        drone1.type = 'sine';
-        drone1.frequency.setValueAtTime(55, this.audioContext.currentTime); // Low A
-        drone2.type = 'sine';
-        drone2.frequency.setValueAtTime(82.5, this.audioContext.currentTime); // E above
+        harmony.type = 'sine';
+        harmony.frequency.setValueAtTime(330, this.audioContext.currentTime); // E4
+        harmonyGain.gain.setValueAtTime(0.08, this.audioContext.currentTime);
         
-        droneGain.gain.setValueAtTime(0.08, this.audioContext.currentTime);
+        harmony.connect(harmonyGain);
+        harmonyGain.connect(this.musicGain);
+        harmony.start();
+        layers.push({ source: harmony, gain: harmonyGain });
         
-        drone1.connect(droneGain);
-        drone2.connect(droneGain);
-        droneGain.connect(this.musicGain);
+        // Layer 3: Bass foundation
+        const bass = this.audioContext.createOscillator();
+        const bassGain = this.audioContext.createGain();
         
-        drone1.start();
-        drone2.start();
-        layers.push({ source: drone1, gain: droneGain }, { source: drone2, gain: droneGain });
+        bass.type = 'triangle';
+        bass.frequency.setValueAtTime(110, this.audioContext.currentTime); // A2
+        bassGain.gain.setValueAtTime(0.06, this.audioContext.currentTime);
         
-        // Layer 3: Occasional bird chirps
-        this.scheduleBirdSounds();
+        bass.connect(bassGain);
+        bassGain.connect(this.musicGain);
+        bass.start();
+        layers.push({ source: bass, gain: bassGain });
         
-        // Layer 4: Gentle water sounds (filtered noise)
-        const waterNoise = this.audioContext.createBufferSource();
-        const waterBuffer = this.createWaterSound();
-        const waterGain = this.audioContext.createGain();
-        const waterFilter = this.audioContext.createBiquadFilter();
+        // Layer 4: Gentle pad (soft background)
+        const pad = this.audioContext.createOscillator();
+        const padGain = this.audioContext.createGain();
         
-        waterNoise.buffer = waterBuffer;
-        waterNoise.loop = true;
-        waterFilter.type = 'highpass';
-        waterFilter.frequency.setValueAtTime(200, this.audioContext.currentTime);
-        waterGain.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+        pad.type = 'triangle';
+        pad.frequency.setValueAtTime(165, this.audioContext.currentTime); // E3
+        padGain.gain.setValueAtTime(0.04, this.audioContext.currentTime);
         
-        waterNoise.connect(waterFilter);
-        waterFilter.connect(waterGain);
-        waterGain.connect(this.musicGain);
-        waterNoise.start();
-        layers.push({ source: waterNoise, gain: waterGain });
+        pad.connect(padGain);
+        padGain.connect(this.musicGain);
+        pad.start();
+        layers.push({ source: pad, gain: padGain });
         
         // Store references for cleanup
-        this.currentMusicSource = { layers, drone1, drone2 };
+        this.currentMusicSource = { layers, melody, harmony, bass, pad };
         
-        // Add gentle modulation
-        this.modulateNatureAmbience(drone1, drone2, windGain, waterGain);
+        // Add gentle musical modulation
+        this.modulateBackgroundMusic(melody, harmony, bass, pad, melodyGain, harmonyGain, bassGain, padGain);
         
-        console.log('Peaceful nature ambience started');
+        console.log('Pleasant background music started');
     }
 
-    createWindSound() {
-        const duration = 4.0; // Loop every 4 seconds
-        const sampleRate = this.audioContext.sampleRate;
-        const buffer = this.audioContext.createBuffer(1, duration * sampleRate, sampleRate);
-        const data = buffer.getChannelData(0);
-        
-        for (let i = 0; i < data.length; i++) {
-            const t = i / sampleRate;
-            // Create gentle wind noise with slow modulation
-            const noise = (Math.random() * 2 - 1) * 0.3;
-            const modulation = Math.sin(t * 0.5) * 0.5 + 0.5; // Slow breathing pattern
-            data[i] = noise * modulation * 0.4;
-        }
-        
-        return buffer;
-    }
-
-    createWaterSound() {
-        const duration = 3.0; // Loop every 3 seconds
-        const sampleRate = this.audioContext.sampleRate;
-        const buffer = this.audioContext.createBuffer(1, duration * sampleRate, sampleRate);
-        const data = buffer.getChannelData(0);
-        
-        for (let i = 0; i < data.length; i++) {
-            const t = i / sampleRate;
-            // Create gentle water babbling
-            const noise = (Math.random() * 2 - 1) * 0.2;
-            const bubble = Math.sin(t * 20 + Math.sin(t * 3) * 2) * 0.1;
-            data[i] = (noise + bubble) * 0.3;
-        }
-        
-        return buffer;
-    }
-
-    scheduleBirdSounds() {
-        const playBirdChirp = () => {
-            if (!this.currentMusicSource) return;
-            
-            // Create a simple bird chirp
-            const chirp = this.audioContext.createOscillator();
-            const chirpGain = this.audioContext.createGain();
-            const chirpFilter = this.audioContext.createBiquadFilter();
-            
-            chirp.type = 'sine';
-            chirpFilter.type = 'bandpass';
-            chirpFilter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
-            chirpFilter.Q.setValueAtTime(5, this.audioContext.currentTime);
-            
-            const startFreq = 800 + Math.random() * 1200;
-            const endFreq = startFreq + (Math.random() - 0.5) * 400;
-            
-            chirp.frequency.setValueAtTime(startFreq, this.audioContext.currentTime);
-            chirp.frequency.linearRampToValueAtTime(endFreq, this.audioContext.currentTime + 0.2);
-            
-            chirpGain.gain.setValueAtTime(0, this.audioContext.currentTime);
-            chirpGain.gain.linearRampToValueAtTime(0.05, this.audioContext.currentTime + 0.01);
-            chirpGain.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.2);
-            
-            chirp.connect(chirpFilter);
-            chirpFilter.connect(chirpGain);
-            chirpGain.connect(this.musicGain);
-            
-            chirp.start();
-            chirp.stop(this.audioContext.currentTime + 0.2);
-            
-            // Schedule next bird sound (random interval between 8-25 seconds)
-            const nextChirp = 8000 + Math.random() * 17000;
-            setTimeout(playBirdChirp, nextChirp);
-        };
-        
-        // Start first bird sound after 5-15 seconds
-        const firstChirp = 5000 + Math.random() * 10000;
-        setTimeout(playBirdChirp, firstChirp);
-    }
-
-    modulateNatureAmbience(drone1, drone2, windGain, waterGain) {
+    modulateBackgroundMusic(melody, harmony, bass, pad, melodyGain, harmonyGain, bassGain, padGain) {
         const modulate = () => {
             if (!this.currentMusicSource) return;
             
             const time = this.audioContext.currentTime;
             
-            // Very gentle frequency modulation for drones
+            // Very gentle frequency modulation for melody
             const variation = Math.sin(time * 0.02) * 2; // Very slow and subtle
-            drone1.frequency.setValueAtTime(55 + variation, time);
-            drone2.frequency.setValueAtTime(82.5 + variation * 0.5, time);
+            melody.frequency.setValueAtTime(220 + variation, time);
+            harmony.frequency.setValueAtTime(330 + variation * 0.5, time);
+            bass.frequency.setValueAtTime(110 + variation * 0.25, time);
+            pad.frequency.setValueAtTime(165 + variation * 0.125, time);
             
-            // Gentle volume breathing for wind and water
+            // Gentle volume breathing for melody, harmony, bass, and pad
             const breathe = Math.sin(time * 0.03) * 0.05 + 1;
-            windGain.gain.setValueAtTime(0.15 * breathe, time);
-            waterGain.gain.setValueAtTime(0.1 * breathe, time);
+            melodyGain.gain.setValueAtTime(0.1 * breathe, time);
+            harmonyGain.gain.setValueAtTime(0.08 * breathe, time);
+            bassGain.gain.setValueAtTime(0.06 * breathe, time);
+            padGain.gain.setValueAtTime(0.04 * breathe, time);
             
             setTimeout(modulate, 200); // Update every 200ms
         };
@@ -391,8 +313,10 @@ class AudioManager {
     stopMusic() {
         if (this.currentMusicSource) {
             try {
-                this.currentMusicSource.drone1.stop();
-                this.currentMusicSource.drone2.stop();
+                this.currentMusicSource.melody.stop();
+                this.currentMusicSource.harmony.stop();
+                this.currentMusicSource.bass.stop();
+                this.currentMusicSource.pad.stop();
                 this.currentMusicSource = null;
                 console.log('Background music stopped');
             } catch (error) {

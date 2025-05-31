@@ -284,41 +284,62 @@ class IronGolem extends Entity {
         const isMoving = this.velocity.length() > 0.1;
         
         if (isMoving) {
-            this.walkTime += deltaTime * 3; // Slower, more powerful walking
+            this.walkTime += deltaTime * 4; // Slightly faster for more visible animation
             
-            // Enhanced leg animation - more dramatic swings
-            const legSwing = Math.sin(this.walkTime) * 0.5; // Increased from 0.3
+            // Enhanced leg animation - more dramatic and realistic swings
+            const legSwing = Math.sin(this.walkTime) * 0.6; // Increased amplitude for more visible movement
+            const legLift = Math.abs(Math.sin(this.walkTime)) * 0.3; // Vertical leg lift
+            
+            // Left leg movement
             this.bodyParts.leftLeg.rotation.x = legSwing;
+            this.bodyParts.leftLeg.position.y = 0.9 + (legSwing > 0 ? legLift : 0); // Lift when swinging forward
+            
+            // Right leg movement (opposite phase)
             this.bodyParts.rightLeg.rotation.x = -legSwing;
+            this.bodyParts.rightLeg.position.y = 0.9 + (-legSwing > 0 ? legLift : 0); // Lift when swinging forward
             
-            // Enhanced arm animation - opposite to legs for natural walking
-            const armSwing = Math.sin(this.walkTime + Math.PI) * 0.3; // Opposite phase to legs
+            // Enhanced hand and arm animation - more natural walking motion
+            const armSwing = Math.sin(this.walkTime + Math.PI) * 0.4; // Opposite to legs, increased amplitude
+            const handRotation = Math.sin(this.walkTime + Math.PI) * 0.2; // Hand rotation for natural movement
+            
+            // Left arm and hand (opposite to right leg)
             this.bodyParts.leftArm.rotation.x = armSwing;
-            this.bodyParts.rightArm.rotation.x = -armSwing * 0.5; // Less swing for weapon arm
+            this.bodyParts.leftArm.rotation.z = Math.sin(this.walkTime * 2) * 0.1; // Side swing
+            this.bodyParts.leftHand.rotation.x = handRotation;
+            this.bodyParts.leftHand.rotation.z = Math.sin(this.walkTime) * 0.15; // Hand sway
             
-            // Add body sway for more realistic movement
+            // Right arm and hand (less swing due to weapon, but still natural)
+            this.bodyParts.rightArm.rotation.x = -armSwing * 0.6; // Reduced due to weapon weight
+            this.bodyParts.rightArm.rotation.z = Math.sin(this.walkTime * 2) * 0.05; // Subtle side swing
+            this.bodyParts.rightHand.rotation.x = -handRotation * 0.7; // Weapon hand movement
+            this.bodyParts.rightHand.rotation.z = Math.sin(this.walkTime) * 0.1; // Weapon sway
+            
+            // Enhanced body movement for more realistic walking
             if (this.bodyParts.body) {
-                this.bodyParts.body.rotation.z = Math.sin(this.walkTime * 2) * 0.05; // Side to side sway
-                this.bodyParts.body.position.y = 2.4 + Math.sin(this.walkTime * 2) * 0.1; // Vertical bob
+                this.bodyParts.body.rotation.z = Math.sin(this.walkTime * 2) * 0.08; // Increased body sway
+                this.bodyParts.body.position.y = 2.4 + Math.sin(this.walkTime * 2) * 0.15; // More pronounced vertical bob
+                this.bodyParts.body.rotation.x = Math.sin(this.walkTime) * 0.03; // Forward/backward lean
             }
             
-            // Head movement - slight nod and turn
+            // Enhanced head movement - more natural head bobbing
             if (this.bodyParts.head) {
-                this.bodyParts.head.rotation.x = Math.sin(this.walkTime * 2) * 0.05; // Slight nod
-                this.bodyParts.head.position.y = 4.2 + Math.sin(this.walkTime * 2) * 0.05; // Head bob
+                this.bodyParts.head.rotation.x = Math.sin(this.walkTime * 2) * 0.08; // More pronounced nod
+                this.bodyParts.head.position.y = 4.2 + Math.sin(this.walkTime * 2) * 0.12; // Enhanced head bob
+                this.bodyParts.head.rotation.z = Math.sin(this.walkTime * 2) * 0.04; // Side head movement
             }
             
-            // Weapon sway during walking
+            // Enhanced weapon sway during walking
             if (this.weapon) {
-                this.weapon.rotation.z = Math.sin(this.walkTime) * 0.1; // Weapon sway
+                this.weapon.rotation.z = Math.sin(this.walkTime) * 0.15; // More weapon sway
+                this.weapon.rotation.x = Math.PI / 6 + Math.sin(this.walkTime * 2) * 0.05; // Weapon bob
             }
             
             // Enhanced footstep sounds with ground impact
             if (!this.lastFootstepTime) this.lastFootstepTime = 0;
-            if (this.walkTime - this.lastFootstepTime > 1.0) { // Every 1 second for heavy steps
+            if (this.walkTime - this.lastFootstepTime > 0.8) { // Slightly faster footsteps for better rhythm
                 const audioManager = window.game?.gameEngine?.audioManager;
                 if (audioManager) {
-                    audioManager.playSound('footstep', this.position, 0.5); // Louder footsteps
+                    audioManager.playSound('footstep', this.position, 0.6); // Slightly louder footsteps
                 }
                 this.lastFootstepTime = this.walkTime;
                 
@@ -326,40 +347,57 @@ class IronGolem extends Entity {
                 this.addFootstepShake();
             }
         } else {
-            // Smooth return to neutral pose
-            const returnSpeed = deltaTime * 3;
+            // Smooth return to neutral pose with better interpolation
+            const returnSpeed = deltaTime * 4; // Faster return for more responsive feel
             
-            // Reset legs
+            // Reset legs with smooth interpolation
             if (this.bodyParts.leftLeg) {
                 this.bodyParts.leftLeg.rotation.x = THREE.MathUtils.lerp(this.bodyParts.leftLeg.rotation.x, 0, returnSpeed);
+                this.bodyParts.leftLeg.position.y = THREE.MathUtils.lerp(this.bodyParts.leftLeg.position.y, 0.9, returnSpeed);
             }
             if (this.bodyParts.rightLeg) {
                 this.bodyParts.rightLeg.rotation.x = THREE.MathUtils.lerp(this.bodyParts.rightLeg.rotation.x, 0, returnSpeed);
+                this.bodyParts.rightLeg.position.y = THREE.MathUtils.lerp(this.bodyParts.rightLeg.position.y, 0.9, returnSpeed);
             }
             
-            // Reset arms
+            // Reset arms with smooth interpolation
             if (this.bodyParts.leftArm) {
                 this.bodyParts.leftArm.rotation.x = THREE.MathUtils.lerp(this.bodyParts.leftArm.rotation.x, 0, returnSpeed);
+                this.bodyParts.leftArm.rotation.z = THREE.MathUtils.lerp(this.bodyParts.leftArm.rotation.z, 0, returnSpeed);
             }
             if (this.bodyParts.rightArm) {
                 this.bodyParts.rightArm.rotation.x = THREE.MathUtils.lerp(this.bodyParts.rightArm.rotation.x, 0, returnSpeed);
+                this.bodyParts.rightArm.rotation.z = THREE.MathUtils.lerp(this.bodyParts.rightArm.rotation.z, 0, returnSpeed);
             }
             
-            // Reset body position and rotation
+            // Reset hands with smooth interpolation
+            if (this.bodyParts.leftHand) {
+                this.bodyParts.leftHand.rotation.x = THREE.MathUtils.lerp(this.bodyParts.leftHand.rotation.x, 0, returnSpeed);
+                this.bodyParts.leftHand.rotation.z = THREE.MathUtils.lerp(this.bodyParts.leftHand.rotation.z, 0, returnSpeed);
+            }
+            if (this.bodyParts.rightHand) {
+                this.bodyParts.rightHand.rotation.x = THREE.MathUtils.lerp(this.bodyParts.rightHand.rotation.x, 0, returnSpeed);
+                this.bodyParts.rightHand.rotation.z = THREE.MathUtils.lerp(this.bodyParts.rightHand.rotation.z, 0, returnSpeed);
+            }
+            
+            // Reset body position and rotation with smooth interpolation
             if (this.bodyParts.body) {
                 this.bodyParts.body.rotation.z = THREE.MathUtils.lerp(this.bodyParts.body.rotation.z, 0, returnSpeed);
+                this.bodyParts.body.rotation.x = THREE.MathUtils.lerp(this.bodyParts.body.rotation.x, 0, returnSpeed);
                 this.bodyParts.body.position.y = THREE.MathUtils.lerp(this.bodyParts.body.position.y, 2.4, returnSpeed);
             }
             
-            // Reset head
+            // Reset head with smooth interpolation
             if (this.bodyParts.head) {
                 this.bodyParts.head.rotation.x = THREE.MathUtils.lerp(this.bodyParts.head.rotation.x, 0, returnSpeed);
+                this.bodyParts.head.rotation.z = THREE.MathUtils.lerp(this.bodyParts.head.rotation.z, 0, returnSpeed);
                 this.bodyParts.head.position.y = THREE.MathUtils.lerp(this.bodyParts.head.position.y, 4.2, returnSpeed);
             }
             
-            // Reset weapon
+            // Reset weapon with smooth interpolation
             if (this.weapon) {
                 this.weapon.rotation.z = THREE.MathUtils.lerp(this.weapon.rotation.z, 0, returnSpeed);
+                this.weapon.rotation.x = THREE.MathUtils.lerp(this.weapon.rotation.x, Math.PI / 6, returnSpeed);
             }
         }
     }
@@ -447,8 +485,6 @@ class IronGolem extends Entity {
 
     // Camera control methods
     rotateCamera(deltaX, deltaY) {
-        console.log(`Camera rotation input: deltaX=${deltaX}, deltaY=${deltaY}`); // Debug log
-        
         // Horizontal rotation (Y-axis)
         this.cameraRotation.y -= deltaX * this.mouseSensitivity;
         
@@ -458,8 +494,6 @@ class IronGolem extends Entity {
         
         // Update character rotation to match camera horizontal rotation
         this.rotation.y = this.cameraRotation.y;
-        
-        console.log(`Camera rotation updated: x=${this.cameraRotation.x.toFixed(3)}, y=${this.cameraRotation.y.toFixed(3)}`); // Debug log
     }
 
     getCameraPosition() {

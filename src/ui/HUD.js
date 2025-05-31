@@ -202,15 +202,14 @@ class HUD {
         this.attackCooldownDisplay = document.createElement('div');
         this.attackCooldownDisplay.style.cssText = `
             position: absolute;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 120px;
+            right: 20px;
             background: rgba(0, 0, 0, 0.8);
             border: 3px solid #FF5722;
             padding: 15px;
             border-radius: 10px;
             text-align: center;
-            min-width: 200px;
+            min-width: 180px;
             box-shadow: 0 0 15px rgba(255, 87, 34, 0.5);
         `;
         

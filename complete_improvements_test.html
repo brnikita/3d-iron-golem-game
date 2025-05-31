@@ -103,37 +103,38 @@
             <h2>🎮 Complete Improvements Test</h2>
             
             <div class="improvement-section">
-                <div class="improvement-title">🎵 Nature Audio System</div>
-                <div id="audioStatus" class="improvement-status status-pending">Testing peaceful nature sounds...</div>
+                <div class="improvement-title">🎵 Clean Background Music</div>
+                <div id="audioStatus" class="improvement-status status-pending">Testing clean background music...</div>
                 <div class="feature-list">
-                    • Gentle wind ambience<br>
-                    • Babbling water sounds<br>
-                    • Random bird chirps<br>
-                    • Harmonic drone base<br>
-                    • No more noisy background!
+                    • Clean sine wave melodies<br>
+                    • Harmonic layers (A3, E4)<br>
+                    • Bass foundation (A2)<br>
+                    • Gentle pad background<br>
+                    • No more noise - pure music!
                 </div>
             </div>
             
             <div class="improvement-section">
-                <div class="improvement-title">⚔️ Attack Cooldown Indicator</div>
-                <div id="cooldownStatus" class="improvement-status status-pending">Testing attack feedback...</div>
+                <div class="improvement-title">⚔️ Attack Status (Top Right)</div>
+                <div id="cooldownStatus" class="improvement-status status-pending">Testing repositioned attack indicator...</div>
                 <div class="feature-list">
+                    • Moved to top right corner<br>
+                    • Below wave display<br>
                     • Visual cooldown bar<br>
                     • Color-coded status<br>
-                    • Countdown timer<br>
-                    • Ready/Cooling indicators
+                    • Countdown timer
                 </div>
             </div>
             
             <div class="improvement-section">
-                <div class="improvement-title">🚶 Enhanced Movement Animations</div>
-                <div id="movementStatus" class="improvement-status status-pending">Testing enhanced animations...</div>
+                <div class="improvement-title">🚶 Enhanced Walking Animations</div>
+                <div id="movementStatus" class="improvement-status status-pending">Testing enhanced leg & hand animations...</div>
                 <div class="feature-list">
-                    • Dramatic leg swings<br>
-                    • Natural arm movement<br>
-                    • Body sway and bobbing<br>
+                    • Realistic leg lifting & swinging<br>
+                    • Natural hand & arm movement<br>
+                    • Enhanced body sway & bobbing<br>
                     • Weapon sway while walking<br>
-                    • Heavy footstep effects
+                    • Smooth interpolation & physics
                 </div>
             </div>
             
@@ -152,22 +153,22 @@
             <div class="controls">
                 <div style="color: #2196F3; font-weight: bold; margin-bottom: 8px;">🎮 Test All Features:</div>
                 <div style="font-size: 12px;">
-                    <strong>🎵 Audio:</strong> Listen for peaceful nature sounds<br>
-                    <strong>⚔️ Cooldown:</strong> Watch bottom-center indicator<br>
-                    <strong>🚶 Movement:</strong> Use WASD to see enhanced animations<br>
+                    <strong>🎵 Music:</strong> Listen for clean background music<br>
+                    <strong>⚔️ Attack Status:</strong> Check top right corner indicator<br>
+                    <strong>🚶 Walking:</strong> Use WASD to see enhanced leg & hand animations<br>
                     <strong>🔨 Weapon:</strong> Left click to see hammer attacks<br>
                     <strong>🌲 Boundaries:</strong> Try walking to forest edge
                 </div>
             </div>
             
             <div style="margin-top: 15px; padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 4px solid #FFC107; border-radius: 5px;">
-                <div style="color: #FFC107; font-weight: bold; margin-bottom: 5px;">🔍 What's New:</div>
+                <div style="color: #FFC107; font-weight: bold; margin-bottom: 5px;">🔍 Latest Improvements:</div>
                 <div style="font-size: 11px; line-height: 1.4;">
-                    ✨ Replaced noisy audio with peaceful nature ambience<br>
-                    ⚔️ Added visual attack cooldown feedback<br>
-                    🚶 Enhanced character movement with body physics<br>
-                    🔨 Realistic weapon-based attack system<br>
-                    💥 Ground impacts, sparks, and particle effects
+                    ✨ Attack status moved to top right corner<br>
+                    🎵 Replaced noisy audio with clean musical background<br>
+                    🚶 Enhanced walking with realistic leg lifting & hand movement<br>
+                    🔨 Improved weapon sway and body physics<br>
+                    💫 Smooth interpolation for all animations
                 </div>
             </div>
         </div>
@@ -229,19 +230,19 @@
                 const audioManager = window.game.gameEngine.audioManager;
                 if (audioManager.currentMusicSource) {
                     audioInitialized = true;
-                    updateStatus('audioStatus', 'pass', 'Peaceful nature ambience active! 🎵');
+                    updateStatus('audioStatus', 'pass', 'Clean background music active! 🎵');
                 }
             }
         }
         
-        // Test attack cooldown indicator
+        // Test attack cooldown indicator position
         let cooldownDetected = false;
         function testCooldownIndicator() {
             if (window.game?.gameEngine?.hud && !cooldownDetected) {
                 const hud = window.game.gameEngine.hud;
                 if (hud.attackCooldownDisplay) {
                     cooldownDetected = true;
-                    updateStatus('cooldownStatus', 'pass', 'Attack cooldown indicator active! ⚔️');
+                    updateStatus('cooldownStatus', 'pass', 'Attack status in top right! ⚔️');
                 }
             }
         }
@@ -253,7 +254,7 @@
                 const golem = window.game.gameEngine.ironGolem;
                 if (golem.weapon && golem.weaponParts) {
                     enhancedMovementDetected = true;
-                    updateStatus('movementStatus', 'pass', 'Enhanced animations with weapon! 🚶');
+                    updateStatus('movementStatus', 'pass', 'Enhanced leg & hand animations! 🚶');
                 }
             }
         }
@@ -280,22 +281,22 @@
         
         // Initial status updates
         setTimeout(() => {
-            updateStatus('audioStatus', 'pending', 'Initializing nature audio...');
-            updateStatus('cooldownStatus', 'pending', 'Setting up attack indicator...');
-            updateStatus('movementStatus', 'pending', 'Loading enhanced animations...');
+            updateStatus('audioStatus', 'pending', 'Initializing clean music...');
+            updateStatus('cooldownStatus', 'pending', 'Setting up top right indicator...');
+            updateStatus('movementStatus', 'pending', 'Loading enhanced leg & hand animations...');
             updateStatus('weaponStatus', 'pending', 'Creating weapon system...');
         }, 1000);
         
         // Test instructions after 5 seconds
         setTimeout(() => {
             if (!audioInitialized) {
-                updateStatus('audioStatus', 'pending', 'Click anywhere to start audio');
+                updateStatus('audioStatus', 'pending', 'Click anywhere to start clean music');
             }
             if (!cooldownDetected) {
-                updateStatus('cooldownStatus', 'pending', 'Look for indicator at bottom center');
+                updateStatus('cooldownStatus', 'pending', 'Look for indicator in top right corner');
             }
             if (!enhancedMovementDetected) {
-                updateStatus('movementStatus', 'pending', 'Move with WASD to test');
+                updateStatus('movementStatus', 'pending', 'Move with WASD to test leg & hand animations');
             }
             if (!weaponAttackDetected) {
                 updateStatus('weaponStatus', 'pending', 'Left click to test weapon attacks');
