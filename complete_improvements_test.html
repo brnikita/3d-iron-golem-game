@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Improvements Test - Nature Audio, Animations, Weapon Attacks</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            color: white;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        #improvementPanel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            z-index: 1000;
+            max-width: 400px;
+            border: 3px solid #4CAF50;
+            box-shadow: 0 0 25px rgba(76, 175, 80, 0.6);
+        }
+        
+        #loadingScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1B5E20, #2E7D32, #388E3C);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .improvement-section {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-left: 4px solid #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 5px;
+        }
+        
+        .improvement-title {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        
+        .improvement-status {
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .status-pass { color: #4CAF50; }
+        .status-fail { color: #F44336; }
+        .status-pending { color: #FF9800; }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .controls {
+            background: rgba(33, 150, 243, 0.1);
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        
+        .feature-list {
+            font-size: 11px;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="improvementPanel">
+            <h2>🎮 Complete Improvements Test</h2>
+            
+            <div class="improvement-section">
+                <div class="improvement-title">🎵 Nature Audio System</div>
+                <div id="audioStatus" class="improvement-status status-pending">Testing peaceful nature sounds...</div>
+                <div class="feature-list">
+                    • Gentle wind ambience<br>
+                    • Babbling water sounds<br>
+                    • Random bird chirps<br>
+                    • Harmonic drone base<br>
+                    • No more noisy background!
+                </div>
+            </div>
+            
+            <div class="improvement-section">
+                <div class="improvement-title">⚔️ Attack Cooldown Indicator</div>
+                <div id="cooldownStatus" class="improvement-status status-pending">Testing attack feedback...</div>
+                <div class="feature-list">
+                    • Visual cooldown bar<br>
+                    • Color-coded status<br>
+                    • Countdown timer<br>
+                    • Ready/Cooling indicators
+                </div>
+            </div>
+            
+            <div class="improvement-section">
+                <div class="improvement-title">🚶 Enhanced Movement Animations</div>
+                <div id="movementStatus" class="improvement-status status-pending">Testing enhanced animations...</div>
+                <div class="feature-list">
+                    • Dramatic leg swings<br>
+                    • Natural arm movement<br>
+                    • Body sway and bobbing<br>
+                    • Weapon sway while walking<br>
+                    • Heavy footstep effects
+                </div>
+            </div>
+            
+            <div class="improvement-section">
+                <div class="improvement-title">🔨 Weapon-Based Attacks</div>
+                <div id="weaponStatus" class="improvement-status status-pending">Testing weapon attacks...</div>
+                <div class="feature-list">
+                    • Iron hammer weapon<br>
+                    • Multi-phase attack animation<br>
+                    • Weapon trail effects<br>
+                    • Ground impact craters<br>
+                    • Spark and dust particles
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div style="color: #2196F3; font-weight: bold; margin-bottom: 8px;">🎮 Test All Features:</div>
+                <div style="font-size: 12px;">
+                    <strong>🎵 Audio:</strong> Listen for peaceful nature sounds<br>
+                    <strong>⚔️ Cooldown:</strong> Watch bottom-center indicator<br>
+                    <strong>🚶 Movement:</strong> Use WASD to see enhanced animations<br>
+                    <strong>🔨 Weapon:</strong> Left click to see hammer attacks<br>
+                    <strong>🌲 Boundaries:</strong> Try walking to forest edge
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 4px solid #FFC107; border-radius: 5px;">
+                <div style="color: #FFC107; font-weight: bold; margin-bottom: 5px;">🔍 What's New:</div>
+                <div style="font-size: 11px; line-height: 1.4;">
+                    ✨ Replaced noisy audio with peaceful nature ambience<br>
+                    ⚔️ Added visual attack cooldown feedback<br>
+                    🚶 Enhanced character movement with body physics<br>
+                    🔨 Realistic weapon-based attack system<br>
+                    💥 Ground impacts, sparks, and particle effects
+                </div>
+            </div>
+        </div>
+        
+        <div id="loadingScreen">
+            <h1>🌿 Complete Improvements Loading 🌿</h1>
+            <p>Initializing all enhanced features...</p>
+            <div style="margin-top: 20px; font-size: 14px; text-align: center;">
+                🎵 Peaceful nature audio system<br>
+                ⚔️ Attack cooldown visualization<br>
+                🚶 Enhanced movement animations<br>
+                🔨 Weapon-based attack system<br>
+                💥 Advanced particle effects
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Game Scripts -->
+    <script src="src/core/AudioManager.js"></script>
+    <script src="src/core/AssetLoader.js"></script>
+    <script src="src/core/InputManager.js"></script>
+    <script src="src/entities/Entity.js"></script>
+    <script src="src/entities/IronGolem.js"></script>
+    <script src="src/entities/Enemy.js"></script>
+    <script src="src/entities/Resource.js"></script>
+    <script src="src/systems/PhysicsSystem.js"></script>
+    <script src="src/systems/CombatSystem.js"></script>
+    <script src="src/systems/WaveSystem.js"></script>
+    <script src="src/systems/ResourceSystem.js"></script>
+    <script src="src/world/WorldGenerator.js"></script>
+    <script src="src/ui/HUD.js"></script>
+    <script src="src/ui/MenuSystem.js"></script>
+    <script src="src/utils/MathUtils.js"></script>
+    <script src="src/utils/GeometryUtils.js"></script>
+    <script src="src/utils/StorageManager.js"></script>
+    <script src="src/core/GameEngine.js"></script>
+    <script src="src/main.js"></script>
+
+    <script>
+        console.log('🌿 Complete Improvements Test - All features enhanced!');
+        
+        function updateStatus(statusId, status, message) {
+            const element = document.getElementById(statusId);
+            if (element) {
+                const icon = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⏳';
+                const className = `status-${status}`;
+                element.innerHTML = `${icon} ${message}`;
+                element.className = `improvement-status ${className}`;
+            }
+        }
+        
+        // Test audio system
+        let audioInitialized = false;
+        function testAudioSystem() {
+            if (window.game?.gameEngine?.audioManager && !audioInitialized) {
+                const audioManager = window.game.gameEngine.audioManager;
+                if (audioManager.currentMusicSource) {
+                    audioInitialized = true;
+                    updateStatus('audioStatus', 'pass', 'Peaceful nature ambience active! 🎵');
+                }
+            }
+        }
+        
+        // Test attack cooldown indicator
+        let cooldownDetected = false;
+        function testCooldownIndicator() {
+            if (window.game?.gameEngine?.hud && !cooldownDetected) {
+                const hud = window.game.gameEngine.hud;
+                if (hud.attackCooldownDisplay) {
+                    cooldownDetected = true;
+                    updateStatus('cooldownStatus', 'pass', 'Attack cooldown indicator active! ⚔️');
+                }
+            }
+        }
+        
+        // Test enhanced movement animations
+        let enhancedMovementDetected = false;
+        function testEnhancedMovement() {
+            if (window.game?.gameEngine?.ironGolem && !enhancedMovementDetected) {
+                const golem = window.game.gameEngine.ironGolem;
+                if (golem.weapon && golem.weaponParts) {
+                    enhancedMovementDetected = true;
+                    updateStatus('movementStatus', 'pass', 'Enhanced animations with weapon! 🚶');
+                }
+            }
+        }
+        
+        // Test weapon attacks
+        let weaponAttackDetected = false;
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            
+            const message = args.join(' ');
+            if (message.includes('Weapon attack sequence') && !weaponAttackDetected) {
+                weaponAttackDetected = true;
+                updateStatus('weaponStatus', 'pass', 'Weapon-based attacks working! 🔨');
+            }
+        };
+        
+        // Run tests periodically
+        setInterval(() => {
+            testAudioSystem();
+            testCooldownIndicator();
+            testEnhancedMovement();
+        }, 1000);
+        
+        // Initial status updates
+        setTimeout(() => {
+            updateStatus('audioStatus', 'pending', 'Initializing nature audio...');
+            updateStatus('cooldownStatus', 'pending', 'Setting up attack indicator...');
+            updateStatus('movementStatus', 'pending', 'Loading enhanced animations...');
+            updateStatus('weaponStatus', 'pending', 'Creating weapon system...');
+        }, 1000);
+        
+        // Test instructions after 5 seconds
+        setTimeout(() => {
+            if (!audioInitialized) {
+                updateStatus('audioStatus', 'pending', 'Click anywhere to start audio');
+            }
+            if (!cooldownDetected) {
+                updateStatus('cooldownStatus', 'pending', 'Look for indicator at bottom center');
+            }
+            if (!enhancedMovementDetected) {
+                updateStatus('movementStatus', 'pending', 'Move with WASD to test');
+            }
+            if (!weaponAttackDetected) {
+                updateStatus('weaponStatus', 'pending', 'Left click to test weapon attacks');
+            }
+        }, 5000);
+        
+        console.log('🧪 All improvement tests initialized - Experience the enhanced game!');
+    </script>
+</body>
+</html> 
