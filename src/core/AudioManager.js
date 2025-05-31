@@ -23,34 +23,27 @@ class AudioManager {
         
         // Audio file URLs (local files first, then fallbacks)
         this.audioUrls = {
-            // Try local files first, then external fallbacks
+            // Use the uploaded MP3 files
             'background_music': [
-                'assets/audio/forest_ambience.mp3',
-                'assets/audio/nature_background.mp3'
+                'assets/audio/forest_ambience.mp3'
             ],
             'footstep': [
-                'assets/audio/footstep.wav',
-                'assets/audio/step.wav'
+                'assets/audio/footstep.mp3'
             ],
             'attack': [
-                'assets/audio/sword_slash.wav',
-                'assets/audio/attack.wav'
+                'assets/audio/sword_slash.mp3'
             ],
             'hit': [
-                'assets/audio/metal_hit.wav',
-                'assets/audio/impact.wav'
+                'assets/audio/metal_hit.mp3'
             ],
             'resource_collect': [
-                'assets/audio/pickup.wav',
-                'assets/audio/collect.wav'
+                'assets/audio/pickup.mp3'
             ],
             'enemy_death': [
-                'assets/audio/enemy_death.wav',
-                'assets/audio/death.wav'
+                'assets/audio/enemy_death.mp3'
             ],
             'wave_start': [
-                'assets/audio/wave_start.wav',
-                'assets/audio/notification.wav'
+                'assets/audio/wave_start.mp3'
             ]
         };
         
@@ -120,16 +113,28 @@ class AudioManager {
             try {
                 // Try to fetch the audio file
                 for (const url of urls) {
-                    const response = await fetch(url, { mode: 'cors' });
-                    if (response.ok) {
-                        const arrayBuffer = await response.arrayBuffer();
-                        const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-                        resolve(audioBuffer);
-                        return;
+                    console.log(`🔄 Trying to load: ${url}`);
+                    try {
+                        const response = await fetch(url); // Remove CORS for same-origin
+                        console.log(`📡 Response status for ${url}:`, response.status, response.statusText);
+                        if (response.ok) {
+                            console.log(`✅ Successfully fetched ${url}, decoding audio...`);
+                            const arrayBuffer = await response.arrayBuffer();
+                            console.log(`📊 Audio buffer size: ${arrayBuffer.byteLength} bytes`);
+                            const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                            console.log(`🎵 Audio decoded successfully: ${audioBuffer.duration.toFixed(2)}s, ${audioBuffer.numberOfChannels} channels`);
+                            resolve(audioBuffer);
+                            return;
+                        } else {
+                            console.warn(`❌ Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+                        }
+                    } catch (fetchError) {
+                        console.warn(`❌ Fetch error for ${url}:`, fetchError);
                     }
                 }
                 throw new Error('All audio files failed to load');
             } catch (error) {
+                console.error('❌ loadAudioFile error:', error);
                 reject(error);
             }
         });
@@ -239,6 +244,11 @@ class AudioManager {
             return;
         }
 
+        // Debug: Check if this is a real audio file or synthetic
+        const isRealAudio = buffer.duration > 0.5 || buffer.numberOfChannels > 1;
+        const audioType = isRealAudio ? '🎵 REAL AUDIO' : '🔧 SYNTHETIC';
+        console.log(`${audioType} Playing: ${soundName} (${buffer.duration.toFixed(2)}s, ${buffer.numberOfChannels}ch)`);
+
         try {
             const source = this.audioContext.createBufferSource();
             const gainNode = this.audioContext.createGain();
@@ -279,8 +289,10 @@ class AudioManager {
         try {
             const musicBuffer = this.audioBuffers.get('background_music');
             if (musicBuffer) {
+                console.log(`🎵 Found background music buffer: ${musicBuffer.duration.toFixed(2)}s, ${musicBuffer.numberOfChannels}ch`);
                 this.playRealBackgroundMusic(musicBuffer);
             } else {
+                console.log('🔧 No background music buffer found, using synthetic music');
                 // Fallback to simple ambient music
                 this.createSimpleBackgroundMusic();
             }
