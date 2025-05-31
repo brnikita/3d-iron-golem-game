@@ -9,7 +9,7 @@ class AudioManager {
         // Volume settings
         this.masterVolume = 0.7;
         this.sfxVolume = 0.8;
-        this.musicVolume = 0.3; // Lower for background music
+        this.musicVolume = 0.6; // Increased from 0.3 to 0.6 (2x louder)
         
         // Audio context
         this.audioContext = null;
@@ -314,7 +314,7 @@ class AudioManager {
         source.connect(gainNode);
         gainNode.connect(this.musicGain);
         
-        // Set volume
+        // Set volume (2x louder than before)
         gainNode.gain.value = this.musicVolume;
         
         source.start();
@@ -322,7 +322,7 @@ class AudioManager {
         // Store reference for cleanup
         this.currentMusicSource = { source, gainNode };
         
-        console.log('Real background music started');
+        console.log(`🎵 Real background music started at volume: ${this.musicVolume} (2x louder)`);
     }
 
     createSimpleBackgroundMusic() {
@@ -335,7 +335,7 @@ class AudioManager {
         
         melody.type = 'sine';
         melody.frequency.setValueAtTime(220, this.audioContext.currentTime); // A3
-        melodyGain.gain.setValueAtTime(0.05, this.audioContext.currentTime); // Quieter
+        melodyGain.gain.setValueAtTime(0.1, this.audioContext.currentTime); // 2x louder (was 0.05)
         
         melody.connect(melodyGain);
         melodyGain.connect(this.musicGain);
@@ -348,7 +348,7 @@ class AudioManager {
         
         harmony.type = 'sine';
         harmony.frequency.setValueAtTime(330, this.audioContext.currentTime); // E4
-        harmonyGain.gain.setValueAtTime(0.04, this.audioContext.currentTime); // Quieter
+        harmonyGain.gain.setValueAtTime(0.08, this.audioContext.currentTime); // 2x louder (was 0.04)
         
         harmony.connect(harmonyGain);
         harmonyGain.connect(this.musicGain);
@@ -377,8 +377,8 @@ class AudioManager {
             
             // Gentle volume breathing
             const breathe = Math.sin(time * 0.02) * 0.02 + 1;
-            melodyGain.gain.setValueAtTime(0.05 * breathe, time);
-            harmonyGain.gain.setValueAtTime(0.04 * breathe, time);
+            melodyGain.gain.setValueAtTime(0.1 * breathe, time);
+            harmonyGain.gain.setValueAtTime(0.08 * breathe, time);
             
             setTimeout(modulate, 500); // Update every 500ms
         };
