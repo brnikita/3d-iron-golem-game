@@ -378,7 +378,7 @@ class IronGolem extends Entity {
         // Get combat system and perform attack
         const combatSystem = window.game?.gameEngine?.combatSystem;
         if (combatSystem) {
-            const targets = combatSystem.getTargetsInRange(this.position, this.attackRange);
+            const targets = combatSystem.getTargetsInRange(this.position, this.attackRange, this);
             console.log(`🎯 Found ${targets.length} targets in range`);
             
             targets.forEach(target => {
