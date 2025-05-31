@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iron Golem Survival - Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+        .test-result {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .pass { color: #4CAF50; }
+        .fail { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Iron Golem Survival - System Test</h1>
+    
+    <div class="test-section">
+        <h3>Core Systems Test</h3>
+        <div id="coreTests"></div>
+        <button onclick="testCoreSystems()">Test Core Systems</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Game Functionality Test</h3>
+        <div id="gameTests"></div>
+        <button onclick="testGameFunctionality()">Test Game Functions</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Performance Test</h3>
+        <div id="performanceTests"></div>
+        <button onclick="testPerformance()">Test Performance</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Launch Game</h3>
+        <p>If all tests pass, you can launch the full game:</p>
+        <button onclick="window.open('index.html', '_blank')">Launch Iron Golem Survival</button>
+    </div>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Game Scripts -->
+    <script src="src/core/GameEngine.js"></script>
+    <script src="src/core/AssetLoader.js"></script>
+    <script src="src/core/InputManager.js"></script>
+    <script src="src/core/AudioManager.js"></script>
+    
+    <script src="src/entities/Entity.js"></script>
+    <script src="src/entities/IronGolem.js"></script>
+    <script src="src/entities/Enemy.js"></script>
+    <script src="src/entities/Resource.js"></script>
+    
+    <script src="src/world/WorldGenerator.js"></script>
+    <script src="src/world/Village.js"></script>
+    <script src="src/world/Terrain.js"></script>
+    
+    <script src="src/systems/CombatSystem.js"></script>
+    <script src="src/systems/WaveSystem.js"></script>
+    <script src="src/systems/ResourceSystem.js"></script>
+    <script src="src/systems/PhysicsSystem.js"></script>
+    
+    <script src="src/ui/HUD.js"></script>
+    <script src="src/ui/MenuSystem.js"></script>
+    
+    <script src="src/utils/MathUtils.js"></script>
+    <script src="src/utils/GeometryUtils.js"></script>
+    <script src="src/utils/StorageManager.js"></script>
+
+    <script>
+        function addTestResult(containerId, message, status) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${status}`;
+            div.textContent = message;
+            container.appendChild(div);
+        }
+
+        function testCoreSystems() {
+            const container = document.getElementById('coreTests');
+            container.innerHTML = '';
+            
+            // Test class availability
+            const classes = [
+                'GameEngine', 'AssetLoader', 'InputManager', 'AudioManager',
+                'Entity', 'IronGolem', 'Enemy', 'Resource',
+                'WorldGenerator', 'Village', 'Terrain',
+                'CombatSystem', 'WaveSystem', 'ResourceSystem', 'PhysicsSystem',
+                'HUD', 'MenuSystem',
+                'MathUtils', 'GeometryUtils', 'StorageManager'
+            ];
+            
+            classes.forEach(className => {
+                if (window[className]) {
+                    addTestResult('coreTests', `✓ ${className} class loaded`, 'pass');
+                } else {
+                    addTestResult('coreTests', `✗ ${className} class missing`, 'fail');
+                }
+            });
+            
+            // Test Three.js
+            if (window.THREE) {
+                addTestResult('coreTests', '✓ Three.js loaded', 'pass');
+            } else {
+                addTestResult('coreTests', '✗ Three.js missing', 'fail');
+            }
+        }
+
+        function testGameFunctionality() {
+            const container = document.getElementById('gameTests');
+            container.innerHTML = '';
+            
+            try {
+                // Test GameEngine creation
+                const engine = new GameEngine();
+                addTestResult('gameTests', '✓ GameEngine can be created', 'pass');
+                
+                // Test system initialization
+                engine.initializeSystems();
+                addTestResult('gameTests', '✓ Systems can be initialized', 'pass');
+                
+                // Test entity creation
+                const ironGolem = new IronGolem();
+                addTestResult('gameTests', '✓ IronGolem can be created', 'pass');
+                
+                const enemy = new Enemy();
+                addTestResult('gameTests', '✓ Enemy can be created', 'pass');
+                
+                const resource = new Resource(new THREE.Vector3(), 'ironIngots');
+                addTestResult('gameTests', '✓ Resource can be created', 'pass');
+                
+                // Test world generation
+                const worldGen = new WorldGenerator();
+                const world = worldGen.generateWorld();
+                addTestResult('gameTests', '✓ World can be generated', 'pass');
+                
+                addTestResult('gameTests', 'ℹ All core functionality tests passed!', 'info');
+                
+            } catch (error) {
+                addTestResult('gameTests', `✗ Error: ${error.message}`, 'fail');
+            }
+        }
+
+        function testPerformance() {
+            const container = document.getElementById('performanceTests');
+            container.innerHTML = '';
+            
+            try {
+                const startTime = performance.now();
+                
+                // Create multiple entities to test performance
+                const entities = [];
+                for (let i = 0; i < 100; i++) {
+                    const enemy = new Enemy(new THREE.Vector3(
+                        Math.random() * 20 - 10,
+                        0,
+                        Math.random() * 20 - 10
+                    ));
+                    enemy.initialize();
+                    entities.push(enemy);
+                }
+                
+                const creationTime = performance.now() - startTime;
+                addTestResult('performanceTests', `✓ Created 100 enemies in ${creationTime.toFixed(2)}ms`, 'pass');
+                
+                // Test update performance
+                const updateStart = performance.now();
+                entities.forEach(entity => entity.update(0.016)); // 60 FPS delta
+                const updateTime = performance.now() - updateStart;
+                addTestResult('performanceTests', `✓ Updated 100 enemies in ${updateTime.toFixed(2)}ms`, 'pass');
+                
+                // Memory usage
+                if (performance.memory) {
+                    const memoryMB = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
+                    addTestResult('performanceTests', `ℹ Memory usage: ${memoryMB} MB`, 'info');
+                }
+                
+                // Cleanup
+                entities.forEach(entity => entity.dispose());
+                addTestResult('performanceTests', '✓ Entities cleaned up successfully', 'pass');
+                
+            } catch (error) {
+                addTestResult('performanceTests', `✗ Performance test error: ${error.message}`, 'fail');
+            }
+        }
+
+        // Auto-run core tests on load
+        window.addEventListener('load', () => {
+            setTimeout(testCoreSystems, 500);
+        });
+    </script>
+</body>
+</html> 
