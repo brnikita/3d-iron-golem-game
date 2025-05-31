@@ -17,9 +17,9 @@ class IronGolem extends Entity {
         this.collisionHeight = 4.0;
         
         // Camera properties
-        this.cameraRotationX = 0;
-        this.cameraRotationY = 0;
+        this.cameraRotation = { x: 0, y: 0 };
         this.maxCameraX = Math.PI / 3; // 60 degrees up/down
+        this.mouseSensitivity = 0.005; // Added for mouse sensitivity
         
         // Movement state
         this.isMoving = false;
@@ -39,25 +39,125 @@ class IronGolem extends Entity {
             attackSpeed: 0
         };
         
+        // Animation state
+        this.walkTime = 0;
+        this.lastFootstepTime = 0;
+        
         this.initialize();
         console.log('Iron Golem created');
     }
 
     createMesh() {
-        // Get Iron Golem model from asset loader
+        // Create detailed Iron Golem model
+        this.mesh = new THREE.Group();
+        this.mesh.name = 'IronGolem';
+        
+        // Get textures
         const assetLoader = window.game?.gameEngine?.assetLoader;
-        if (assetLoader && assetLoader.hasAsset('models/iron_golem')) {
-            const model = assetLoader.getAsset('models/iron_golem');
-            this.mesh = model.scene.clone();
-        } else {
-            // Fallback to simple geometry
-            this.geometry = new THREE.BoxGeometry(2, 4, 1);
-            this.material = new THREE.MeshLambertMaterial({ 
-                color: 0x607D8B,
-                map: assetLoader?.getAsset('textures/iron')
-            });
-            this.mesh = new THREE.Mesh(this.geometry, this.material);
+        const ironTexture = assetLoader?.getAsset('textures/iron');
+        
+        // Create materials
+        const ironMaterial = new THREE.MeshLambertMaterial({ 
+            color: 0x607D8B,
+            map: ironTexture
+        });
+        const eyeMaterial = new THREE.MeshLambertMaterial({ color: 0xFF4444 }); // Red glowing eyes
+        const vineMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 }); // Green vines
+        
+        // Body (main torso)
+        const bodyGeometry = new THREE.BoxGeometry(1.8, 2.4, 1.0);
+        const body = new THREE.Mesh(bodyGeometry, ironMaterial);
+        body.position.y = 1.2;
+        body.castShadow = true;
+        this.mesh.add(body);
+        
+        // Head
+        const headGeometry = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+        const head = new THREE.Mesh(headGeometry, ironMaterial);
+        head.position.y = 3.0;
+        head.castShadow = true;
+        this.mesh.add(head);
+        
+        // Eyes (glowing red)
+        const eyeGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.1);
+        const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        leftEye.position.set(-0.3, 3.1, 0.6);
+        this.mesh.add(leftEye);
+        
+        const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        rightEye.position.set(0.3, 3.1, 0.6);
+        this.mesh.add(rightEye);
+        
+        // Arms
+        const armGeometry = new THREE.BoxGeometry(0.6, 2.0, 0.6);
+        
+        const leftArm = new THREE.Mesh(armGeometry, ironMaterial);
+        leftArm.position.set(-1.4, 1.2, 0);
+        leftArm.castShadow = true;
+        this.mesh.add(leftArm);
+        
+        const rightArm = new THREE.Mesh(armGeometry, ironMaterial);
+        rightArm.position.set(1.4, 1.2, 0);
+        rightArm.castShadow = true;
+        this.mesh.add(rightArm);
+        
+        // Hands (larger fists)
+        const handGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+        
+        const leftHand = new THREE.Mesh(handGeometry, ironMaterial);
+        leftHand.position.set(-1.4, 0.0, 0);
+        leftHand.castShadow = true;
+        this.mesh.add(leftHand);
+        
+        const rightHand = new THREE.Mesh(handGeometry, ironMaterial);
+        rightHand.position.set(1.4, 0.0, 0);
+        rightHand.castShadow = true;
+        this.mesh.add(rightHand);
+        
+        // Legs
+        const legGeometry = new THREE.BoxGeometry(0.8, 1.8, 0.8);
+        
+        const leftLeg = new THREE.Mesh(legGeometry, ironMaterial);
+        leftLeg.position.set(-0.5, -0.9, 0);
+        leftLeg.castShadow = true;
+        this.mesh.add(leftLeg);
+        
+        const rightLeg = new THREE.Mesh(legGeometry, ironMaterial);
+        rightLeg.position.set(0.5, -0.9, 0);
+        rightLeg.castShadow = true;
+        this.mesh.add(rightLeg);
+        
+        // Feet
+        const footGeometry = new THREE.BoxGeometry(1.0, 0.4, 1.4);
+        
+        const leftFoot = new THREE.Mesh(footGeometry, ironMaterial);
+        leftFoot.position.set(-0.5, -1.9, 0.2);
+        leftFoot.castShadow = true;
+        this.mesh.add(leftFoot);
+        
+        const rightFoot = new THREE.Mesh(footGeometry, ironMaterial);
+        rightFoot.position.set(0.5, -1.9, 0.2);
+        rightFoot.castShadow = true;
+        this.mesh.add(rightFoot);
+        
+        // Decorative vines on body
+        const vineGeometry = new THREE.BoxGeometry(0.1, 1.0, 0.1);
+        for (let i = 0; i < 3; i++) {
+            const vine = new THREE.Mesh(vineGeometry, vineMaterial);
+            vine.position.set(
+                (Math.random() - 0.5) * 1.5,
+                1.2 + (Math.random() - 0.5) * 1.0,
+                0.51
+            );
+            vine.rotation.z = (Math.random() - 0.5) * 0.5;
+            this.mesh.add(vine);
         }
+        
+        // Nose (iron block protruding from face)
+        const noseGeometry = new THREE.BoxGeometry(0.3, 0.6, 0.2);
+        const nose = new THREE.Mesh(noseGeometry, ironMaterial);
+        nose.position.set(0, 2.8, 0.7);
+        this.mesh.add(nose);
         
         // Set initial transform
         this.mesh.position.copy(this.position);
@@ -70,33 +170,81 @@ class IronGolem extends Entity {
         // Store reference
         this.mesh.userData.entity = this;
         this.mesh.userData.type = 'iron_golem';
+        
+        // Store body parts for animation
+        this.bodyParts = {
+            body: body,
+            head: head,
+            leftArm: leftArm,
+            rightArm: rightArm,
+            leftHand: leftHand,
+            rightHand: rightHand,
+            leftLeg: leftLeg,
+            rightLeg: rightLeg,
+            leftEye: leftEye,
+            rightEye: rightEye
+        };
     }
 
     update(deltaTime) {
         super.update(deltaTime);
         
-        // Update movement animation state
-        this.updateMovementState();
+        // Handle movement
+        this.handleMovement(deltaTime);
+        
+        // Handle camera rotation
+        this.handleCameraRotation(deltaTime);
         
         // Update attack cooldown
-        this.updateAttackCooldown();
-    }
-
-    updateMovementState() {
-        const wasMoving = this.isMoving;
-        this.isMoving = this.velocity.length() > 0.1;
-        
-        // Play movement animation if state changed
-        if (this.isMoving && !wasMoving) {
-            this.playAnimation('walk');
-        } else if (!this.isMoving && wasMoving) {
-            this.playAnimation('idle');
+        if (this.attackCooldown > 0) {
+            this.attackCooldown -= deltaTime;
         }
+        
+        // Update mesh transform
+        if (this.mesh) {
+            this.mesh.position.copy(this.position);
+            this.mesh.rotation.copy(this.rotation);
+            this.mesh.scale.copy(this.scale);
+        }
+        
+        // Update walking animation and sound
+        this.updateWalkingAnimation(deltaTime);
     }
 
-    updateAttackCooldown() {
-        // Attack cooldown is handled by checking time difference
-        // No need to update anything here
+    updateWalkingAnimation(deltaTime) {
+        if (!this.bodyParts) return;
+        
+        const isMoving = this.velocity.length() > 0.1;
+        
+        if (isMoving) {
+            this.walkTime += deltaTime * 4; // Walking speed
+            
+            // Animate legs
+            const legSwing = Math.sin(this.walkTime) * 0.3;
+            this.bodyParts.leftLeg.rotation.x = legSwing;
+            this.bodyParts.rightLeg.rotation.x = -legSwing;
+            
+            // Animate arms slightly
+            const armSwing = Math.sin(this.walkTime) * 0.1;
+            this.bodyParts.leftArm.rotation.x = -armSwing;
+            this.bodyParts.rightArm.rotation.x = armSwing;
+            
+            // Play footstep sounds
+            if (!this.lastFootstepTime) this.lastFootstepTime = 0;
+            if (this.walkTime - this.lastFootstepTime > 0.8) { // Every 0.8 seconds
+                const audioManager = window.game?.gameEngine?.audioManager;
+                if (audioManager) {
+                    audioManager.playSound('footstep', this.position, 0.3);
+                }
+                this.lastFootstepTime = this.walkTime;
+            }
+        } else {
+            // Reset to neutral pose
+            if (this.bodyParts.leftLeg) this.bodyParts.leftLeg.rotation.x = 0;
+            if (this.bodyParts.rightLeg) this.bodyParts.rightLeg.rotation.x = 0;
+            if (this.bodyParts.leftArm) this.bodyParts.leftArm.rotation.x = 0;
+            if (this.bodyParts.rightArm) this.bodyParts.rightArm.rotation.x = 0;
+        }
     }
 
     // Movement methods
@@ -107,7 +255,7 @@ class IronGolem extends Entity {
         const movement = new THREE.Vector3(x, 0, z);
         
         // Apply camera rotation to movement
-        movement.applyEuler(new THREE.Euler(0, this.cameraRotationY, 0));
+        movement.applyEuler(new THREE.Euler(0, this.cameraRotation.y, 0));
         
         // Normalize and apply speed
         movement.normalize().multiplyScalar(this.moveSpeed * deltaTime);
@@ -135,101 +283,102 @@ class IronGolem extends Entity {
 
     // Camera control methods
     rotateCamera(deltaX, deltaY) {
-        this.cameraRotationY -= deltaX;
-        this.cameraRotationX -= deltaY;
+        // Horizontal rotation (Y-axis)
+        this.cameraRotation.y -= deltaX * this.mouseSensitivity;
         
-        // Clamp vertical rotation
-        this.cameraRotationX = Math.max(-this.maxCameraX, 
-                                       Math.min(this.maxCameraX, this.cameraRotationX));
+        // Vertical rotation (X-axis) with limits
+        this.cameraRotation.x -= deltaY * this.mouseSensitivity;
+        this.cameraRotation.x = Math.max(-Math.PI/3, Math.min(Math.PI/3, this.cameraRotation.x));
         
-        // Normalize horizontal rotation
-        this.cameraRotationY = this.cameraRotationY % (Math.PI * 2);
+        // Update character rotation to match camera horizontal rotation
+        this.rotation.y = this.cameraRotation.y;
     }
 
     getCameraPosition() {
-        // Camera position behind and above Iron Golem
+        // Third-person camera position behind and above the Iron Golem
         const offset = new THREE.Vector3(0, 8, 12);
         
         // Apply camera rotation
-        offset.applyEuler(new THREE.Euler(this.cameraRotationX, this.cameraRotationY, 0));
+        offset.applyEuler(new THREE.Euler(this.cameraRotation.x, this.cameraRotation.y, 0));
         
         return this.position.clone().add(offset);
     }
 
     getCameraTarget() {
-        // Look at point in front of Iron Golem
+        // Look at point in front of the Iron Golem
         const target = this.position.clone();
-        target.y += 2; // Look slightly above ground
+        target.y += 2; // Look slightly above the Iron Golem
         
-        // Apply horizontal rotation to target
+        // Add forward offset based on camera rotation
         const forward = new THREE.Vector3(0, 0, -5);
-        forward.applyEuler(new THREE.Euler(0, this.cameraRotationY, 0));
+        forward.applyEuler(new THREE.Euler(this.cameraRotation.x, this.cameraRotation.y, 0));
         target.add(forward);
         
         return target;
     }
 
+    handleCameraRotation(deltaTime) {
+        // Smooth camera rotation if needed
+        // For now, camera rotation is handled directly in rotateCamera method
+    }
+
     // Combat methods
     attack() {
-        if (this.isDead || !this.canAttack()) return false;
+        if (this.attackCooldown > 0) return false;
         
         console.log('Iron Golem attacks!');
         
         // Play attack animation
-        this.playAnimation('attack', false);
-        
-        // Find enemies in range
-        const enemies = this.findEnemiesInRange();
-        
-        // Deal damage to enemies
-        enemies.forEach(enemy => {
-            const damage = this.calculateDamage();
-            enemy.takeDamage(damage, this);
-            console.log(`Iron Golem hit enemy for ${damage} damage`);
-        });
-        
-        // Set attack cooldown
-        this.lastAttackTime = Date.now();
+        this.playAttackAnimation();
         
         // Play attack sound
-        if (window.game?.gameEngine?.audioManager) {
-            window.game.gameEngine.audioManager.playSound('attack', this.position);
+        const audioManager = window.game?.gameEngine?.audioManager;
+        if (audioManager) {
+            audioManager.playSound('attack', this.position, 0.8);
+        }
+        
+        // Set cooldown
+        this.attackCooldown = this.attackCooldownTime;
+        
+        // Get combat system and perform attack
+        const combatSystem = window.game?.gameEngine?.combatSystem;
+        if (combatSystem) {
+            const targets = combatSystem.getTargetsInRange(this.position, this.attackRange);
+            
+            targets.forEach(target => {
+                if (target !== this && target.takeDamage) {
+                    const damage = this.attackDamage + (this.upgrades.attackDamage * 5);
+                    target.takeDamage(damage, this);
+                    console.log(`Iron Golem deals ${damage} damage to ${target.constructor.name}`);
+                }
+            });
         }
         
         return true;
     }
 
-    canAttack() {
-        const timeSinceLastAttack = Date.now() - this.lastAttackTime;
-        const cooldown = this.getAttackCooldown();
-        return timeSinceLastAttack >= cooldown;
-    }
-
-    getAttackCooldown() {
-        // Base cooldown reduced by attack speed upgrades
-        const speedMultiplier = 1 - (this.upgrades.attackSpeed * 0.2);
-        return this.attackCooldown * speedMultiplier;
-    }
-
-    calculateDamage() {
-        // Base damage plus upgrades
-        return this.attackDamage + (this.upgrades.damageBoost * 5);
-    }
-
-    findEnemiesInRange() {
-        const enemies = [];
+    playAttackAnimation() {
+        if (!this.bodyParts) return;
         
-        if (window.game?.gameEngine) {
-            const allEnemies = window.game.gameEngine.getEnemies();
+        // Animate attack with arms
+        const animateArm = (arm, direction) => {
+            if (!arm) return;
             
-            allEnemies.forEach(enemy => {
-                if (this.isInRange(enemy, this.attackRange)) {
-                    enemies.push(enemy);
-                }
-            });
-        }
+            const originalRotation = arm.rotation.x;
+            arm.rotation.x = -1.2 * direction; // Swing down
+            
+            // Return to original position after animation
+            setTimeout(() => {
+                if (arm) arm.rotation.x = originalRotation;
+            }, 300);
+        };
         
-        return enemies;
+        // Alternate between left and right arm attacks
+        if (Math.random() > 0.5) {
+            animateArm(this.bodyParts.leftArm, 1);
+        } else {
+            animateArm(this.bodyParts.rightArm, -1);
+        }
     }
 
     // Resource management
@@ -383,8 +532,7 @@ class IronGolem extends Entity {
         this.position.set(0, 0, 0);
         this.velocity.set(0, 0, 0);
         this.rotation.set(0, 0, 0);
-        this.cameraRotationX = 0;
-        this.cameraRotationY = 0;
+        this.cameraRotation = { x: 0, y: 0 };
         this.lastAttackTime = 0;
         
         // Reset resources (optional - could keep them)
@@ -418,8 +566,8 @@ class IronGolem extends Entity {
             resources: { ...this.resources },
             upgrades: { ...this.upgrades },
             cameraRotation: {
-                x: this.cameraRotationX,
-                y: this.cameraRotationY
+                x: this.cameraRotation.x,
+                y: this.cameraRotation.y
             }
         };
     }

@@ -24,16 +24,110 @@ class Enemy extends Entity {
     }
 
     createMesh() {
-        // Get enemy model from asset loader or create simple mesh
-        const assetLoader = window.game?.gameEngine?.assetLoader;
-        if (assetLoader && assetLoader.hasAsset('models/zombie')) {
-            const model = assetLoader.getAsset('models/zombie');
-            this.mesh = model.scene.clone();
-        } else {
-            // Fallback to simple geometry
-            this.geometry = new THREE.BoxGeometry(1, 2, 0.5);
-            this.material = new THREE.MeshLambertMaterial({ color: 0x4CAF50 });
-            this.mesh = new THREE.Mesh(this.geometry, this.material);
+        // Create detailed enemy model (zombie-like)
+        this.mesh = new THREE.Group();
+        this.mesh.name = 'Enemy';
+        
+        // Create materials
+        const skinMaterial = new THREE.MeshLambertMaterial({ color: 0x8FBC8F }); // Pale green skin
+        const clothesMaterial = new THREE.MeshLambertMaterial({ color: 0x4169E1 }); // Blue clothes
+        const eyeMaterial = new THREE.MeshLambertMaterial({ color: 0xFF0000 }); // Red eyes
+        const hairMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Brown hair
+        
+        // Head
+        const headGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+        const head = new THREE.Mesh(headGeometry, skinMaterial);
+        head.position.y = 1.6;
+        head.castShadow = true;
+        this.mesh.add(head);
+        
+        // Eyes
+        const eyeGeometry = new THREE.BoxGeometry(0.15, 0.15, 0.1);
+        const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        leftEye.position.set(-0.2, 1.65, 0.4);
+        this.mesh.add(leftEye);
+        
+        const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        rightEye.position.set(0.2, 1.65, 0.4);
+        this.mesh.add(rightEye);
+        
+        // Hair (messy zombie hair)
+        const hairGeometry = new THREE.BoxGeometry(0.9, 0.3, 0.9);
+        const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+        hair.position.y = 2.1;
+        this.mesh.add(hair);
+        
+        // Body (torso)
+        const bodyGeometry = new THREE.BoxGeometry(1.0, 1.5, 0.6);
+        const body = new THREE.Mesh(bodyGeometry, clothesMaterial);
+        body.position.y = 0.75;
+        body.castShadow = true;
+        this.mesh.add(body);
+        
+        // Arms
+        const armGeometry = new THREE.BoxGeometry(0.4, 1.2, 0.4);
+        
+        const leftArm = new THREE.Mesh(armGeometry, skinMaterial);
+        leftArm.position.set(-0.8, 0.75, 0);
+        leftArm.rotation.z = 0.3; // Slightly bent zombie arms
+        leftArm.castShadow = true;
+        this.mesh.add(leftArm);
+        
+        const rightArm = new THREE.Mesh(armGeometry, skinMaterial);
+        rightArm.position.set(0.8, 0.75, 0);
+        rightArm.rotation.z = -0.3;
+        rightArm.castShadow = true;
+        this.mesh.add(rightArm);
+        
+        // Hands
+        const handGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+        
+        const leftHand = new THREE.Mesh(handGeometry, skinMaterial);
+        leftHand.position.set(-1.0, 0.1, 0.2);
+        leftHand.castShadow = true;
+        this.mesh.add(leftHand);
+        
+        const rightHand = new THREE.Mesh(handGeometry, skinMaterial);
+        rightHand.position.set(1.0, 0.1, 0.2);
+        rightHand.castShadow = true;
+        this.mesh.add(rightHand);
+        
+        // Legs
+        const legGeometry = new THREE.BoxGeometry(0.5, 1.2, 0.5);
+        
+        const leftLeg = new THREE.Mesh(legGeometry, clothesMaterial);
+        leftLeg.position.set(-0.3, -0.6, 0);
+        leftLeg.castShadow = true;
+        this.mesh.add(leftLeg);
+        
+        const rightLeg = new THREE.Mesh(legGeometry, clothesMaterial);
+        rightLeg.position.set(0.3, -0.6, 0);
+        rightLeg.castShadow = true;
+        this.mesh.add(rightLeg);
+        
+        // Feet
+        const footGeometry = new THREE.BoxGeometry(0.6, 0.3, 0.8);
+        
+        const leftFoot = new THREE.Mesh(footGeometry, skinMaterial);
+        leftFoot.position.set(-0.3, -1.3, 0.1);
+        leftFoot.castShadow = true;
+        this.mesh.add(leftFoot);
+        
+        const rightFoot = new THREE.Mesh(footGeometry, skinMaterial);
+        rightFoot.position.set(0.3, -1.3, 0.1);
+        rightFoot.castShadow = true;
+        this.mesh.add(rightFoot);
+        
+        // Torn clothes details
+        const tearGeometry = new THREE.BoxGeometry(0.1, 0.3, 0.1);
+        for (let i = 0; i < 2; i++) {
+            const tear = new THREE.Mesh(tearGeometry, clothesMaterial);
+            tear.position.set(
+                (Math.random() - 0.5) * 0.8,
+                0.75 + (Math.random() - 0.5) * 0.5,
+                0.31
+            );
+            this.mesh.add(tear);
         }
         
         // Set initial transform
@@ -47,6 +141,18 @@ class Enemy extends Entity {
         // Store reference
         this.mesh.userData.entity = this;
         this.mesh.userData.type = 'enemy';
+        
+        // Store body parts for animation
+        this.bodyParts = {
+            head: head,
+            body: body,
+            leftArm: leftArm,
+            rightArm: rightArm,
+            leftLeg: leftLeg,
+            rightLeg: rightLeg,
+            leftEye: leftEye,
+            rightEye: rightEye
+        };
     }
 
     update(deltaTime) {
@@ -225,6 +331,83 @@ class Enemy extends Entity {
             canAttack: this.canAttack(),
             stuckTimer: this.stuckTimer
         };
+    }
+
+    takeDamage(amount, attacker = null) {
+        if (this.isDead) return;
+        
+        this.health -= amount;
+        console.log(`Enemy takes ${amount} damage, health: ${this.health}`);
+        
+        // Play hit sound
+        const audioManager = window.game?.gameEngine?.audioManager;
+        if (audioManager) {
+            audioManager.playSound('hit', this.position, 0.6);
+        }
+        
+        // Flash red when hit
+        this.flashRed();
+        
+        if (this.health <= 0) {
+            this.die(attacker);
+        } else {
+            // Switch to chasing state when damaged
+            this.setState('chasing');
+        }
+    }
+
+    flashRed() {
+        if (!this.bodyParts) return;
+        
+        // Store original materials
+        const originalMaterials = {};
+        Object.keys(this.bodyParts).forEach(partName => {
+            const part = this.bodyParts[partName];
+            if (part && part.material) {
+                originalMaterials[partName] = part.material.clone();
+                part.material.color.setHex(0xFF4444); // Red flash
+            }
+        });
+        
+        // Restore original materials after flash
+        setTimeout(() => {
+            Object.keys(originalMaterials).forEach(partName => {
+                const part = this.bodyParts[partName];
+                if (part) {
+                    part.material = originalMaterials[partName];
+                }
+            });
+        }, 100);
+    }
+
+    die(attacker = null) {
+        if (this.isDead) return;
+        
+        this.isDead = true;
+        this.state = 'dead';
+        
+        console.log('Enemy died');
+        
+        // Play death sound
+        const audioManager = window.game?.gameEngine?.audioManager;
+        if (audioManager) {
+            audioManager.playSound('enemy_death', this.position, 0.7);
+        }
+        
+        // Drop resources
+        this.dropResources();
+        
+        // Remove from scene after a short delay
+        setTimeout(() => {
+            if (this.mesh && this.mesh.parent) {
+                this.mesh.parent.remove(this.mesh);
+            }
+            
+            // Remove from game engine
+            if (window.game?.gameEngine) {
+                window.game.gameEngine.removeEntity(this);
+            }
+        }, 1000);
     }
 }
 

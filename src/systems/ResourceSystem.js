@@ -207,6 +207,28 @@ class ResourceSystem {
         
         console.log('ResourceSystem disposed');
     }
+
+    collectResource(resource, collector) {
+        if (!resource || !collector) return false;
+        
+        // Add resource to collector's inventory
+        if (collector.addResource) {
+            collector.addResource(resource.type, resource.amount);
+        }
+        
+        // Play collection sound
+        const audioManager = window.game?.gameEngine?.audioManager;
+        if (audioManager) {
+            audioManager.playSound('resource_collect', resource.position, 0.5);
+        }
+        
+        console.log(`Collected ${resource.amount} ${resource.type}`);
+        
+        // Remove resource from world
+        this.removeResource(resource);
+        
+        return true;
+    }
 }
 
 window.ResourceSystem = ResourceSystem; 

@@ -217,13 +217,9 @@ class GameEngine {
     }
 
     setupPlayerCamera() {
-        // Third-person camera setup
-        this.cameraOffset = new THREE.Vector3(0, 8, 12);
-        this.cameraTarget = new THREE.Vector3();
-        
-        // Camera controls
+        // Camera controls handled by Iron Golem
         this.inputManager.onMouseMove = (deltaX, deltaY) => {
-            if (this.state === GameState.PLAYING && !this.isPaused) {
+            if (this.state === GameState.PLAYING && !this.isPaused && this.ironGolem) {
                 this.ironGolem.rotateCamera(deltaX, deltaY);
             }
         };
@@ -358,14 +354,15 @@ class GameEngine {
     updateCamera(deltaTime) {
         if (!this.ironGolem) return;
         
-        // Smooth camera follow
-        const targetPosition = this.ironGolem.position.clone().add(this.cameraOffset);
-        this.camera.position.lerp(targetPosition, deltaTime * 5);
+        // Get camera position and target from Iron Golem
+        const cameraPosition = this.ironGolem.getCameraPosition();
+        const cameraTarget = this.ironGolem.getCameraTarget();
         
-        // Look at Iron Golem
-        this.cameraTarget.copy(this.ironGolem.position);
-        this.cameraTarget.y += 2; // Look slightly above
-        this.camera.lookAt(this.cameraTarget);
+        // Smooth camera follow
+        this.camera.position.lerp(cameraPosition, deltaTime * 5);
+        
+        // Look at target
+        this.camera.lookAt(cameraTarget);
     }
 
     render() {

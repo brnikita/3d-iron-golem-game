@@ -36,6 +36,12 @@ class WaveSystem {
         
         console.log(`Starting wave ${this.currentWave} with ${this.enemiesSpawned} enemies`);
         
+        // Play wave start sound
+        const audioManager = window.game?.gameEngine?.audioManager;
+        if (audioManager) {
+            audioManager.playSound('wave_start', null, 0.8);
+        }
+        
         // Spawn enemies
         this.spawnEnemies();
         
