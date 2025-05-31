@@ -20,7 +20,7 @@ class IronGolem extends Entity {
         // Camera properties
         this.cameraRotation = { x: 0, y: 0 };
         this.maxCameraX = Math.PI / 3; // 60 degrees up/down
-        this.mouseSensitivity = 0.005; // Added for mouse sensitivity
+        this.mouseSensitivity = 0.01; // Increased from 0.005 to 0.01
         
         // Movement state
         this.isMoving = false;
@@ -68,37 +68,37 @@ class IronGolem extends Entity {
         // Body (main torso)
         const bodyGeometry = new THREE.BoxGeometry(1.8, 2.4, 1.0);
         const body = new THREE.Mesh(bodyGeometry, ironMaterial);
-        body.position.y = 1.2;
+        body.position.y = 2.4;
         body.castShadow = true;
         this.mesh.add(body);
         
         // Head
         const headGeometry = new THREE.BoxGeometry(1.2, 1.2, 1.2);
         const head = new THREE.Mesh(headGeometry, ironMaterial);
-        head.position.y = 3.0;
+        head.position.y = 4.2;
         head.castShadow = true;
         this.mesh.add(head);
         
         // Eyes (glowing red)
         const eyeGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.1);
         const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        leftEye.position.set(-0.3, 3.1, 0.6);
+        leftEye.position.set(-0.3, 4.3, 0.6);
         this.mesh.add(leftEye);
         
         const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        rightEye.position.set(0.3, 3.1, 0.6);
+        rightEye.position.set(0.3, 4.3, 0.6);
         this.mesh.add(rightEye);
         
         // Arms
         const armGeometry = new THREE.BoxGeometry(0.6, 2.0, 0.6);
         
         const leftArm = new THREE.Mesh(armGeometry, ironMaterial);
-        leftArm.position.set(-1.4, 1.2, 0);
+        leftArm.position.set(-1.4, 2.4, 0);
         leftArm.castShadow = true;
         this.mesh.add(leftArm);
         
         const rightArm = new THREE.Mesh(armGeometry, ironMaterial);
-        rightArm.position.set(1.4, 1.2, 0);
+        rightArm.position.set(1.4, 2.4, 0);
         rightArm.castShadow = true;
         this.mesh.add(rightArm);
         
@@ -106,12 +106,12 @@ class IronGolem extends Entity {
         const handGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
         
         const leftHand = new THREE.Mesh(handGeometry, ironMaterial);
-        leftHand.position.set(-1.4, 0.0, 0);
+        leftHand.position.set(-1.4, 1.2, 0);
         leftHand.castShadow = true;
         this.mesh.add(leftHand);
         
         const rightHand = new THREE.Mesh(handGeometry, ironMaterial);
-        rightHand.position.set(1.4, 0.0, 0);
+        rightHand.position.set(1.4, 1.2, 0);
         rightHand.castShadow = true;
         this.mesh.add(rightHand);
         
@@ -119,12 +119,12 @@ class IronGolem extends Entity {
         const legGeometry = new THREE.BoxGeometry(0.8, 1.8, 0.8);
         
         const leftLeg = new THREE.Mesh(legGeometry, ironMaterial);
-        leftLeg.position.set(-0.5, -0.9, 0);
+        leftLeg.position.set(-0.5, 0.9, 0);
         leftLeg.castShadow = true;
         this.mesh.add(leftLeg);
         
         const rightLeg = new THREE.Mesh(legGeometry, ironMaterial);
-        rightLeg.position.set(0.5, -0.9, 0);
+        rightLeg.position.set(0.5, 0.9, 0);
         rightLeg.castShadow = true;
         this.mesh.add(rightLeg);
         
@@ -132,12 +132,12 @@ class IronGolem extends Entity {
         const footGeometry = new THREE.BoxGeometry(1.0, 0.4, 1.4);
         
         const leftFoot = new THREE.Mesh(footGeometry, ironMaterial);
-        leftFoot.position.set(-0.5, -1.9, 0.2);
+        leftFoot.position.set(-0.5, 0.2, 0.2);
         leftFoot.castShadow = true;
         this.mesh.add(leftFoot);
         
         const rightFoot = new THREE.Mesh(footGeometry, ironMaterial);
-        rightFoot.position.set(0.5, -1.9, 0.2);
+        rightFoot.position.set(0.5, 0.2, 0.2);
         rightFoot.castShadow = true;
         this.mesh.add(rightFoot);
         
@@ -147,7 +147,7 @@ class IronGolem extends Entity {
             const vine = new THREE.Mesh(vineGeometry, vineMaterial);
             vine.position.set(
                 (Math.random() - 0.5) * 1.5,
-                1.2 + (Math.random() - 0.5) * 1.0,
+                2.4 + (Math.random() - 0.5) * 1.0,
                 0.51
             );
             vine.rotation.z = (Math.random() - 0.5) * 0.5;
@@ -157,7 +157,7 @@ class IronGolem extends Entity {
         // Nose (iron block protruding from face)
         const noseGeometry = new THREE.BoxGeometry(0.3, 0.6, 0.2);
         const nose = new THREE.Mesh(noseGeometry, ironMaterial);
-        nose.position.set(0, 2.8, 0.7);
+        nose.position.set(0, 4.0, 0.7);
         this.mesh.add(nose);
         
         // Set initial transform
@@ -309,6 +309,8 @@ class IronGolem extends Entity {
 
     // Camera control methods
     rotateCamera(deltaX, deltaY) {
+        console.log(`Camera rotation input: deltaX=${deltaX}, deltaY=${deltaY}`); // Debug log
+        
         // Horizontal rotation (Y-axis)
         this.cameraRotation.y -= deltaX * this.mouseSensitivity;
         
@@ -318,6 +320,8 @@ class IronGolem extends Entity {
         
         // Update character rotation to match camera horizontal rotation
         this.rotation.y = this.cameraRotation.y;
+        
+        console.log(`Camera rotation updated: x=${this.cameraRotation.x.toFixed(3)}, y=${this.cameraRotation.y.toFixed(3)}`); // Debug log
     }
 
     getCameraPosition() {

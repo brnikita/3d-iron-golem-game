@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Test - Iron Golem Fixes</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            color: white;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        #instructions {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        #loadingScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="instructions">
+            <h3>🧪 Testing Fixes</h3>
+            <div style="font-size: 14px;">
+                <strong>✅ Fixed Issues:</strong><br>
+                1. Iron Golem position (no longer underground)<br>
+                2. Mouse look controls (click to lock pointer)<br>
+                3. Attack functionality (left click)<br><br>
+                
+                <strong>🎮 Controls:</strong><br>
+                • WASD - Move Iron Golem<br>
+                • Mouse - Look around (click first!)<br>
+                • Left Click - Attack<br>
+                • Check browser console for debug info<br><br>
+                
+                <strong>🔍 What to Test:</strong><br>
+                • Iron Golem should be fully above ground<br>
+                • Mouse should control camera after clicking<br>
+                • Left click should trigger attacks<br>
+                • Check console for debug messages
+            </div>
+        </div>
+        
+        <div id="loadingScreen">
+            <h1>🔧 Quick Fix Test</h1>
+            <p>Loading fixed game...</p>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Game Scripts -->
+    <script src="src/core/AudioManager.js"></script>
+    <script src="src/core/AssetLoader.js"></script>
+    <script src="src/core/InputManager.js"></script>
+    <script src="src/entities/Entity.js"></script>
+    <script src="src/entities/IronGolem.js"></script>
+    <script src="src/entities/Enemy.js"></script>
+    <script src="src/entities/Resource.js"></script>
+    <script src="src/systems/PhysicsSystem.js"></script>
+    <script src="src/systems/CombatSystem.js"></script>
+    <script src="src/systems/WaveSystem.js"></script>
+    <script src="src/systems/ResourceSystem.js"></script>
+    <script src="src/world/WorldGenerator.js"></script>
+    <script src="src/ui/HUD.js"></script>
+    <script src="src/ui/MenuSystem.js"></script>
+    <script src="src/utils/MathUtils.js"></script>
+    <script src="src/utils/GeometryUtils.js"></script>
+    <script src="src/utils/StorageManager.js"></script>
+    <script src="src/core/GameEngine.js"></script>
+    <script src="src/main.js"></script>
+
+    <script>
+        console.log('🧪 Quick test page loaded - Check console for debug info');
+        
+        // Add extra debugging
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (window.game && window.game.gameEngine && window.game.gameEngine.ironGolem) {
+                    const golem = window.game.gameEngine.ironGolem;
+                    console.log('✅ Iron Golem position:', golem.position);
+                    console.log('✅ Iron Golem mesh position:', golem.mesh.position);
+                    console.log('✅ Camera rotation:', golem.cameraRotation);
+                } else {
+                    console.log('❌ Iron Golem not found');
+                }
+            }, 3000);
+        });
+    </script>
+</body>
+</html> 

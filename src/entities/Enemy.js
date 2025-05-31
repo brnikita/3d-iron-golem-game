@@ -37,30 +37,30 @@ class Enemy extends Entity {
         // Head
         const headGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
         const head = new THREE.Mesh(headGeometry, skinMaterial);
-        head.position.y = 1.6;
+        head.position.y = 2.8;
         head.castShadow = true;
         this.mesh.add(head);
         
         // Eyes
         const eyeGeometry = new THREE.BoxGeometry(0.15, 0.15, 0.1);
         const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        leftEye.position.set(-0.2, 1.65, 0.4);
+        leftEye.position.set(-0.2, 2.85, 0.4);
         this.mesh.add(leftEye);
         
         const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        rightEye.position.set(0.2, 1.65, 0.4);
+        rightEye.position.set(0.2, 2.85, 0.4);
         this.mesh.add(rightEye);
         
         // Hair (messy zombie hair)
         const hairGeometry = new THREE.BoxGeometry(0.9, 0.3, 0.9);
         const hair = new THREE.Mesh(hairGeometry, hairMaterial);
-        hair.position.y = 2.1;
+        hair.position.y = 3.3;
         this.mesh.add(hair);
         
         // Body (torso)
         const bodyGeometry = new THREE.BoxGeometry(1.0, 1.5, 0.6);
         const body = new THREE.Mesh(bodyGeometry, clothesMaterial);
-        body.position.y = 0.75;
+        body.position.y = 1.95;
         body.castShadow = true;
         this.mesh.add(body);
         
@@ -68,13 +68,13 @@ class Enemy extends Entity {
         const armGeometry = new THREE.BoxGeometry(0.4, 1.2, 0.4);
         
         const leftArm = new THREE.Mesh(armGeometry, skinMaterial);
-        leftArm.position.set(-0.8, 0.75, 0);
+        leftArm.position.set(-0.8, 1.95, 0);
         leftArm.rotation.z = 0.3; // Slightly bent zombie arms
         leftArm.castShadow = true;
         this.mesh.add(leftArm);
         
         const rightArm = new THREE.Mesh(armGeometry, skinMaterial);
-        rightArm.position.set(0.8, 0.75, 0);
+        rightArm.position.set(0.8, 1.95, 0);
         rightArm.rotation.z = -0.3;
         rightArm.castShadow = true;
         this.mesh.add(rightArm);
@@ -83,12 +83,12 @@ class Enemy extends Entity {
         const handGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
         
         const leftHand = new THREE.Mesh(handGeometry, skinMaterial);
-        leftHand.position.set(-1.0, 0.1, 0.2);
+        leftHand.position.set(-1.0, 1.3, 0.2);
         leftHand.castShadow = true;
         this.mesh.add(leftHand);
         
         const rightHand = new THREE.Mesh(handGeometry, skinMaterial);
-        rightHand.position.set(1.0, 0.1, 0.2);
+        rightHand.position.set(1.0, 1.3, 0.2);
         rightHand.castShadow = true;
         this.mesh.add(rightHand);
         
@@ -96,12 +96,12 @@ class Enemy extends Entity {
         const legGeometry = new THREE.BoxGeometry(0.5, 1.2, 0.5);
         
         const leftLeg = new THREE.Mesh(legGeometry, clothesMaterial);
-        leftLeg.position.set(-0.3, -0.6, 0);
+        leftLeg.position.set(-0.3, 0.6, 0);
         leftLeg.castShadow = true;
         this.mesh.add(leftLeg);
         
         const rightLeg = new THREE.Mesh(legGeometry, clothesMaterial);
-        rightLeg.position.set(0.3, -0.6, 0);
+        rightLeg.position.set(0.3, 0.6, 0);
         rightLeg.castShadow = true;
         this.mesh.add(rightLeg);
         
@@ -109,12 +109,12 @@ class Enemy extends Entity {
         const footGeometry = new THREE.BoxGeometry(0.6, 0.3, 0.8);
         
         const leftFoot = new THREE.Mesh(footGeometry, skinMaterial);
-        leftFoot.position.set(-0.3, -1.3, 0.1);
+        leftFoot.position.set(-0.3, 0.15, 0.1);
         leftFoot.castShadow = true;
         this.mesh.add(leftFoot);
         
         const rightFoot = new THREE.Mesh(footGeometry, skinMaterial);
-        rightFoot.position.set(0.3, -1.3, 0.1);
+        rightFoot.position.set(0.3, 0.15, 0.1);
         rightFoot.castShadow = true;
         this.mesh.add(rightFoot);
         
@@ -124,7 +124,7 @@ class Enemy extends Entity {
             const tear = new THREE.Mesh(tearGeometry, clothesMaterial);
             tear.position.set(
                 (Math.random() - 0.5) * 0.8,
-                0.75 + (Math.random() - 0.5) * 0.5,
+                1.95 + (Math.random() - 0.5) * 0.5,
                 0.31
             );
             this.mesh.add(tear);

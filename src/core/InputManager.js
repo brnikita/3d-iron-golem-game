@@ -27,7 +27,7 @@ class InputManager {
         ]);
         
         // Mouse settings
-        this.mouseSensitivity = 0.002;
+        this.mouseSensitivity = 0.01;
         this.invertY = false;
         this.isPointerLocked = false;
         
@@ -105,6 +105,8 @@ class InputManager {
         const button = event.button;
         this.mouseButtons.set(button, true);
         
+        console.log(`Mouse button ${button} pressed`); // Debug log
+        
         // Call callback if set
         if (this.onMouseClick) {
             this.onMouseClick(button, true);
@@ -114,8 +116,17 @@ class InputManager {
         if (button === 0 && window.game && window.game.gameEngine) {
             const ironGolem = window.game.gameEngine.getIronGolem();
             if (ironGolem) {
-                ironGolem.attack();
+                console.log('Attempting Iron Golem attack...'); // Debug log
+                const attackResult = ironGolem.attack();
+                console.log('Attack result:', attackResult); // Debug log
+            } else {
+                console.log('Iron Golem not found for attack'); // Debug log
             }
+        }
+        
+        // Request pointer lock on first click
+        if (button === 0) {
+            this.requestPointerLock();
         }
     }
 
@@ -149,9 +160,14 @@ class InputManager {
                 this.onMouseMove(this.mouseDelta.x, this.mouseDelta.y);
             }
         } else {
-            // Calculate delta from last position
+            // Calculate delta from last position for non-locked mode
             this.mouseDelta.x = (event.clientX - this.lastMousePosition.x) * this.mouseSensitivity;
             this.mouseDelta.y = (event.clientY - this.lastMousePosition.y) * this.mouseSensitivity;
+            
+            // Call callback even when not locked (for testing)
+            if (this.onMouseMove) {
+                this.onMouseMove(this.mouseDelta.x, this.mouseDelta.y);
+            }
             
             this.lastMousePosition.x = event.clientX;
             this.lastMousePosition.y = event.clientY;
@@ -162,6 +178,7 @@ class InputManager {
         const canvas = document.getElementById('gameCanvas');
         if (canvas && !this.isPointerLocked) {
             canvas.requestPointerLock();
+            console.log('Requesting pointer lock...');
         }
     }
 
