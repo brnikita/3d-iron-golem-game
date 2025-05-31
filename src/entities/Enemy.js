@@ -547,9 +547,9 @@ class Enemy extends Entity {
                 this.mesh.parent.remove(this.mesh);
             }
             
-            // Remove from game engine
+            // Remove from game engine using the correct method
             if (window.game?.gameEngine) {
-                window.game.gameEngine.removeEntity(this);
+                window.game.gameEngine.removeEnemy(this);
             }
         }, 1000);
     }
