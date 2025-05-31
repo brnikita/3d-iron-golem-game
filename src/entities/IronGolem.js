@@ -9,7 +9,8 @@ class IronGolem extends Entity {
         this.moveSpeed = 4.0; // units per second
         this.attackDamage = 25;
         this.attackRange = 3.0;
-        this.attackCooldown = 2000; // milliseconds
+        this.attackCooldown = 0; // Current cooldown (in seconds)
+        this.attackCooldownTime = 2.0; // Cooldown duration (in seconds)
         this.lastAttackTime = 0;
         
         // Collision properties
@@ -248,6 +249,31 @@ class IronGolem extends Entity {
     }
 
     // Movement methods
+    handleMovement(deltaTime) {
+        if (this.isDead) return;
+        
+        // Get input manager
+        const inputManager = window.game?.gameEngine?.inputManager;
+        if (!inputManager) return;
+        
+        // Get movement input
+        let moveX = 0;
+        let moveZ = 0;
+        
+        if (inputManager.isKeyPressed('KeyW')) moveZ -= 1;
+        if (inputManager.isKeyPressed('KeyS')) moveZ += 1;
+        if (inputManager.isKeyPressed('KeyA')) moveX -= 1;
+        if (inputManager.isKeyPressed('KeyD')) moveX += 1;
+        
+        // Apply movement if there's input
+        if (moveX !== 0 || moveZ !== 0) {
+            this.move(moveX, moveZ, deltaTime);
+        } else {
+            // Stop movement
+            this.velocity.set(0, this.velocity.y, 0);
+        }
+    }
+
     move(x, z, deltaTime) {
         if (this.isDead) return;
         
@@ -347,7 +373,7 @@ class IronGolem extends Entity {
             
             targets.forEach(target => {
                 if (target !== this && target.takeDamage) {
-                    const damage = this.attackDamage + (this.upgrades.attackDamage * 5);
+                    const damage = this.attackDamage + (this.upgrades.damageBoost * 5);
                     target.takeDamage(damage, this);
                     console.log(`Iron Golem deals ${damage} damage to ${target.constructor.name}`);
                 }

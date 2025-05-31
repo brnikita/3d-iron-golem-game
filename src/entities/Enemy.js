@@ -336,8 +336,8 @@ class Enemy extends Entity {
     takeDamage(amount, attacker = null) {
         if (this.isDead) return;
         
-        this.health -= amount;
-        console.log(`Enemy takes ${amount} damage, health: ${this.health}`);
+        this.currentHealth -= amount;
+        console.log(`Enemy takes ${amount} damage, health: ${this.currentHealth}`);
         
         // Play hit sound
         const audioManager = window.game?.gameEngine?.audioManager;
@@ -348,7 +348,7 @@ class Enemy extends Entity {
         // Flash red when hit
         this.flashRed();
         
-        if (this.health <= 0) {
+        if (this.currentHealth <= 0) {
             this.die(attacker);
         } else {
             // Switch to chasing state when damaged
@@ -408,6 +408,17 @@ class Enemy extends Entity {
                 window.game.gameEngine.removeEntity(this);
             }
         }, 1000);
+    }
+
+    dropResources() {
+        // Drop resources when enemy dies
+        if (window.game?.gameEngine?.resourceSystem) {
+            window.game.gameEngine.resourceSystem.dropResources(this, this.position);
+        }
+    }
+
+    setState(newState) {
+        this.state = newState;
     }
 }
 
