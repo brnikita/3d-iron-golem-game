@@ -281,7 +281,9 @@ class IronGolem extends Entity {
     updateWalkingAnimation(deltaTime) {
         if (!this.bodyParts) return;
         
-        const isMoving = this.velocity.length() > 0.1;
+        // Check for movement using both velocity and movement direction
+        const velocityMagnitude = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.z * this.velocity.z);
+        const isMoving = velocityMagnitude > 0.1;
         
         if (isMoving) {
             this.walkTime += deltaTime * 4; // Slightly faster for more visible animation
@@ -339,12 +341,9 @@ class IronGolem extends Entity {
             if (this.walkTime - this.lastFootstepTime > 0.8) { // Slightly faster footsteps for better rhythm
                 const audioManager = window.game?.gameEngine?.audioManager;
                 if (audioManager) {
-                    audioManager.playSound('footstep', this.position, 0.6); // Slightly louder footsteps
+                    audioManager.playSound('footstep', this.position, 0.2); // Reduced from 0.6 to 0.2 (3x quieter)
                 }
                 this.lastFootstepTime = this.walkTime;
-                
-                // Add screen shake for heavy footsteps
-                this.addFootstepShake();
             }
         } else {
             // Smooth return to neutral pose with better interpolation
@@ -445,8 +444,13 @@ class IronGolem extends Entity {
         if (moveX !== 0 || moveZ !== 0) {
             this.move(moveX, moveZ, deltaTime);
         } else {
-            // Stop movement
-            this.velocity.set(0, this.velocity.y, 0);
+            // Gradually reduce velocity instead of setting to zero immediately
+            this.velocity.x *= 0.8; // Gradual slowdown
+            this.velocity.z *= 0.8;
+            
+            // Set to zero if very small to avoid floating point issues
+            if (Math.abs(this.velocity.x) < 0.01) this.velocity.x = 0;
+            if (Math.abs(this.velocity.z) < 0.01) this.velocity.z = 0;
         }
     }
 
@@ -461,6 +465,10 @@ class IronGolem extends Entity {
         
         // Normalize and apply speed
         movement.normalize().multiplyScalar(this.moveSpeed * deltaTime);
+        
+        // Update velocity for animation detection (maintain velocity for animation)
+        this.velocity.x = movement.x / deltaTime; // Convert back to velocity
+        this.velocity.z = movement.z / deltaTime;
         
         // Apply movement
         this.position.add(movement);

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Walking Animation Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+        }
+        #gameContainer {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #444;
+            position: relative;
+        }
+        #instructions {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+        }
+        #debug {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="instructions">
+        <h2>Walking Animation & Sound Test</h2>
+        <p><strong>Controls:</strong> WASD to move, Mouse to look around</p>
+        <p><strong>Expected:</strong> You should see leg/arm animations and hear footstep sounds when walking</p>
+    </div>
+    
+    <div id="gameContainer">
+        <div id="debug">
+            <div>Velocity: <span id="velocity">0.00</span></div>
+            <div>Moving: <span id="moving">false</span></div>
+            <div>Walk Time: <span id="walkTime">0.00</span></div>
+            <div>Audio: <span id="audio">Loading...</span></div>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Game scripts -->
+    <script src="src/core/AssetLoader.js"></script>
+    <script src="src/core/AudioManager.js"></script>
+    <script src="src/core/InputManager.js"></script>
+    <script src="src/entities/Entity.js"></script>
+    <script src="src/entities/IronGolem.js"></script>
+
+    <script>
+        class WalkingTest {
+            constructor() {
+                this.container = document.getElementById('gameContainer');
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.ironGolem = null;
+                this.inputManager = null;
+                this.audioManager = null;
+                
+                this.init();
+                this.animate();
+            }
+
+            init() {
+                // Create scene
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x87CEEB);
+
+                // Create camera
+                this.camera = new THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
+
+                // Create renderer
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                this.container.appendChild(this.renderer.domElement);
+
+                // Add lighting
+                const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+                this.scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(10, 10, 5);
+                directionalLight.castShadow = true;
+                directionalLight.shadow.mapSize.width = 2048;
+                directionalLight.shadow.mapSize.height = 2048;
+                this.scene.add(directionalLight);
+
+                // Create ground
+                const groundGeometry = new THREE.PlaneGeometry(50, 50);
+                const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+                const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+                ground.rotation.x = -Math.PI / 2;
+                ground.receiveShadow = true;
+                this.scene.add(ground);
+
+                // Initialize audio manager
+                this.audioManager = new AudioManager();
+                
+                // Initialize input manager
+                this.inputManager = new InputManager();
+
+                // Create Iron Golem
+                this.ironGolem = new IronGolem(new THREE.Vector3(0, 0, 0));
+                this.scene.add(this.ironGolem.mesh);
+
+                // Set up camera
+                this.camera.position.set(0, 8, 12);
+                this.camera.lookAt(0, 2, 0);
+
+                // Set up global game reference for Iron Golem
+                window.game = {
+                    gameEngine: {
+                        camera: this.camera,
+                        inputManager: this.inputManager,
+                        audioManager: this.audioManager
+                    }
+                };
+
+                // Handle window resize
+                window.addEventListener('resize', () => this.onWindowResize());
+                
+                console.log('Walking test initialized');
+            }
+
+            onWindowResize() {
+                this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+            }
+
+            updateDebugInfo() {
+                const velocity = this.ironGolem.velocity;
+                const velocityMagnitude = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+                const isMoving = velocityMagnitude > 0.1;
+                
+                document.getElementById('velocity').textContent = velocityMagnitude.toFixed(2);
+                document.getElementById('moving').textContent = isMoving;
+                document.getElementById('walkTime').textContent = this.ironGolem.walkTime.toFixed(2);
+                
+                // Check audio status
+                const audioStatus = this.audioManager.audioBuffers.size > 0 ? 'Loaded' : 'Loading...';
+                document.getElementById('audio').textContent = audioStatus;
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+
+                const deltaTime = 0.016; // ~60 FPS
+
+                // Update Iron Golem
+                if (this.ironGolem) {
+                    this.ironGolem.update(deltaTime);
+                    
+                    // Update camera to follow Iron Golem
+                    const golemPos = this.ironGolem.position;
+                    this.camera.position.set(golemPos.x, golemPos.y + 8, golemPos.z + 12);
+                    this.camera.lookAt(golemPos.x, golemPos.y + 2, golemPos.z);
+                }
+
+                // Update audio
+                if (this.audioManager) {
+                    this.audioManager.update(deltaTime);
+                }
+
+                // Update debug info
+                this.updateDebugInfo();
+
+                // Render
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        // Start the test when page loads
+        window.addEventListener('load', () => {
+            new WalkingTest();
+        });
+    </script>
+</body>
+</html> 
