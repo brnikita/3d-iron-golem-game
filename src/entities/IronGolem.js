@@ -354,9 +354,12 @@ class IronGolem extends Entity {
 
     // Combat methods
     attack() {
-        if (this.attackCooldown > 0) return false;
+        if (this.attackCooldown > 0) {
+            console.log(`⏰ Attack on cooldown: ${this.attackCooldown.toFixed(1)}s remaining`);
+            return false;
+        }
         
-        console.log('Iron Golem attacks!');
+        console.log('⚔️ IRON GOLEM ATTACKS! ⚔️');
         
         // Play attack animation
         this.playAttackAnimation();
@@ -365,23 +368,28 @@ class IronGolem extends Entity {
         const audioManager = window.game?.gameEngine?.audioManager;
         if (audioManager) {
             audioManager.playSound('attack', this.position, 0.8);
+            console.log('🔊 Attack sound played');
         }
         
         // Set cooldown
         this.attackCooldown = this.attackCooldownTime;
+        console.log(`⏰ Attack cooldown set to ${this.attackCooldownTime}s`);
         
         // Get combat system and perform attack
         const combatSystem = window.game?.gameEngine?.combatSystem;
         if (combatSystem) {
             const targets = combatSystem.getTargetsInRange(this.position, this.attackRange);
+            console.log(`🎯 Found ${targets.length} targets in range`);
             
             targets.forEach(target => {
                 if (target !== this && target.takeDamage) {
                     const damage = this.attackDamage + (this.upgrades.damageBoost * 5);
                     target.takeDamage(damage, this);
-                    console.log(`Iron Golem deals ${damage} damage to ${target.constructor.name}`);
+                    console.log(`💥 Iron Golem deals ${damage} damage to ${target.constructor.name}`);
                 }
             });
+        } else {
+            console.log('❌ Combat system not found');
         }
         
         return true;
@@ -390,25 +398,122 @@ class IronGolem extends Entity {
     playAttackAnimation() {
         if (!this.bodyParts) return;
         
-        // Animate attack with arms
-        const animateArm = (arm, direction) => {
-            if (!arm) return;
+        console.log('🥊 Playing attack animation!'); // Debug log
+        
+        // Animate attack with arms - make it more dramatic
+        const animateArm = (arm, hand, direction) => {
+            if (!arm || !hand) return;
             
-            const originalRotation = arm.rotation.x;
-            arm.rotation.x = -1.2 * direction; // Swing down
+            const originalArmRotation = arm.rotation.x;
+            const originalHandRotation = hand.rotation.x;
+            
+            // More dramatic swing
+            arm.rotation.x = -1.8 * direction; // Increased from -1.2 to -1.8
+            hand.rotation.x = -0.5 * direction; // Add hand rotation
+            
+            // Add some body lean for more impact
+            if (this.bodyParts.body) {
+                const originalBodyRotation = this.bodyParts.body.rotation.z;
+                this.bodyParts.body.rotation.z = 0.2 * direction;
+                
+                // Restore body position
+                setTimeout(() => {
+                    if (this.bodyParts.body) {
+                        this.bodyParts.body.rotation.z = originalBodyRotation;
+                    }
+                }, 400);
+            }
             
             // Return to original position after animation
             setTimeout(() => {
-                if (arm) arm.rotation.x = originalRotation;
-            }, 300);
+                if (arm) arm.rotation.x = originalArmRotation;
+                if (hand) hand.rotation.x = originalHandRotation;
+            }, 400); // Increased duration from 300 to 400ms
         };
         
         // Alternate between left and right arm attacks
         if (Math.random() > 0.5) {
-            animateArm(this.bodyParts.leftArm, 1);
+            animateArm(this.bodyParts.leftArm, this.bodyParts.leftHand, 1);
+            console.log('🥊 Left arm attack!');
         } else {
-            animateArm(this.bodyParts.rightArm, -1);
+            animateArm(this.bodyParts.rightArm, this.bodyParts.rightHand, -1);
+            console.log('🥊 Right arm attack!');
         }
+        
+        // Add screen shake effect (optional visual feedback)
+        this.addScreenShake();
+        
+        // Add visual attack effect
+        this.addAttackEffect();
+    }
+
+    addScreenShake() {
+        // Simple screen shake by slightly moving the camera
+        const camera = window.game?.gameEngine?.camera;
+        if (!camera) return;
+        
+        const originalPosition = camera.position.clone();
+        const shakeIntensity = 0.1;
+        const shakeDuration = 200; // milliseconds
+        
+        // Apply shake
+        camera.position.x += (Math.random() - 0.5) * shakeIntensity;
+        camera.position.y += (Math.random() - 0.5) * shakeIntensity;
+        camera.position.z += (Math.random() - 0.5) * shakeIntensity;
+        
+        // Restore original position
+        setTimeout(() => {
+            if (camera) {
+                camera.position.copy(originalPosition);
+            }
+        }, shakeDuration);
+        
+        console.log('📳 Screen shake effect applied!');
+    }
+
+    addAttackEffect() {
+        // Create a temporary attack effect (flash)
+        const scene = window.game?.gameEngine?.scene;
+        if (!scene) return;
+        
+        // Create a bright flash effect in front of the Iron Golem
+        const flashGeometry = new THREE.SphereGeometry(1.5, 8, 8);
+        const flashMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xFFFF00, // Bright yellow
+            transparent: true,
+            opacity: 0.8
+        });
+        const flash = new THREE.Mesh(flashGeometry, flashMaterial);
+        
+        // Position flash in front of Iron Golem
+        const attackDirection = new THREE.Vector3(0, 0, -2);
+        attackDirection.applyEuler(new THREE.Euler(0, this.rotation.y, 0));
+        flash.position.copy(this.position.clone().add(attackDirection));
+        flash.position.y += 1; // Raise it up a bit
+        
+        scene.add(flash);
+        
+        // Animate the flash (scale and fade out)
+        let scale = 0.1;
+        let opacity = 0.8;
+        const animateFlash = () => {
+            scale += 0.3;
+            opacity -= 0.1;
+            
+            flash.scale.setScalar(scale);
+            flash.material.opacity = opacity;
+            
+            if (opacity > 0) {
+                requestAnimationFrame(animateFlash);
+            } else {
+                scene.remove(flash);
+                flash.geometry.dispose();
+                flash.material.dispose();
+            }
+        };
+        
+        animateFlash();
+        console.log('💥 Attack effect created!');
     }
 
     // Resource management
