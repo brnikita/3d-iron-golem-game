@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Features Test - Animations, Health, Boundaries</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            color: white;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        #featurePanel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            max-width: 450px;
+            border: 3px solid #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+        
+        #loadingScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1B5E20, #2E7D32);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .feature-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 3px solid #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+        
+        .feature-title {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .feature-status {
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .status-pass { color: #4CAF50; }
+        .status-fail { color: #F44336; }
+        .status-pending { color: #FF9800; }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .controls {
+            background: rgba(33, 150, 243, 0.1);
+            border-left: 3px solid #2196F3;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="featurePanel">
+            <h2>🎮 Enhanced Features Test</h2>
+            
+            <div class="feature-section">
+                <div class="feature-title">🚶 Character Animations</div>
+                <div id="animationStatus" class="feature-status status-pending">Testing walking animations...</div>
+                <div style="font-size: 11px; margin-top: 5px;">
+                    • Iron Golem: Leg swings, arm movement, head bob<br>
+                    • Enemies: Zombie shuffle, arm sway, head bob
+                </div>
+            </div>
+            
+            <div class="feature-section">
+                <div class="feature-title">❤️ Enemy Health Visualization</div>
+                <div id="healthStatus" class="feature-status status-pending">Testing health bars...</div>
+                <div style="font-size: 11px; margin-top: 5px;">
+                    • Health bars above enemies<br>
+                    • Color changes: Green → Yellow → Red<br>
+                    • Damage wounds and darkening<br>
+                    • Floating damage indicators
+                </div>
+            </div>
+            
+            <div class="feature-section">
+                <div class="feature-title">🌲 Forest Boundaries</div>
+                <div id="boundaryStatus" class="feature-status status-pending">Testing boundaries...</div>
+                <div style="font-size: 11px; margin-top: 5px;">
+                    • Dense forest wall around playground<br>
+                    • Invisible collision barriers<br>
+                    • Characters cannot escape<br>
+                    • 80+ boundary trees with undergrowth
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div style="color: #2196F3; font-weight: bold; margin-bottom: 5px;">🎮 Test Controls:</div>
+                <div style="font-size: 12px;">
+                    <strong>Movement:</strong> WASD keys<br>
+                    <strong>Camera:</strong> Mouse (click to lock)<br>
+                    <strong>Attack:</strong> Left click<br>
+                    <strong>Test Boundary:</strong> Walk to forest edge<br>
+                    <strong>Test Health:</strong> Attack enemies (30s spawn)
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 10px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #FFC107;">
+                <div style="color: #FFC107; font-weight: bold;">🔍 What to Look For:</div>
+                <div style="font-size: 11px; margin-top: 5px;">
+                    • Smooth leg/arm animations while moving<br>
+                    • Health bars floating above enemies<br>
+                    • Damage effects when attacking<br>
+                    • Cannot walk past forest boundary<br>
+                    • Dense forest wall surrounding area
+                </div>
+            </div>
+        </div>
+        
+        <div id="loadingScreen">
+            <h1>🌲 Enhanced Features Loading 🌲</h1>
+            <p>Initializing animations, health system, and forest boundaries...</p>
+            <div style="margin-top: 20px; font-size: 14px;">
+                ✨ Character walking animations<br>
+                ❤️ Enemy health visualization<br>
+                🌲 Forest boundary system
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Game Scripts -->
+    <script src="src/core/AudioManager.js"></script>
+    <script src="src/core/AssetLoader.js"></script>
+    <script src="src/core/InputManager.js"></script>
+    <script src="src/entities/Entity.js"></script>
+    <script src="src/entities/IronGolem.js"></script>
+    <script src="src/entities/Enemy.js"></script>
+    <script src="src/entities/Resource.js"></script>
+    <script src="src/systems/PhysicsSystem.js"></script>
+    <script src="src/systems/CombatSystem.js"></script>
+    <script src="src/systems/WaveSystem.js"></script>
+    <script src="src/systems/ResourceSystem.js"></script>
+    <script src="src/world/WorldGenerator.js"></script>
+    <script src="src/ui/HUD.js"></script>
+    <script src="src/ui/MenuSystem.js"></script>
+    <script src="src/utils/MathUtils.js"></script>
+    <script src="src/utils/GeometryUtils.js"></script>
+    <script src="src/utils/StorageManager.js"></script>
+    <script src="src/core/GameEngine.js"></script>
+    <script src="src/main.js"></script>
+
+    <script>
+        console.log('🎮 Enhanced Features Test - Loading all improvements');
+        
+        function updateFeatureStatus(featureId, status, message) {
+            const element = document.getElementById(featureId);
+            if (element) {
+                const icon = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⏳';
+                const className = `status-${status}`;
+                element.innerHTML = `${icon} ${message}`;
+                element.className = `feature-status ${className}`;
+            }
+        }
+        
+        // Test character animations
+        let movementDetected = false;
+        let animationTimer = 0;
+        
+        function testAnimations() {
+            if (window.game?.gameEngine?.ironGolem) {
+                const golem = window.game.gameEngine.ironGolem;
+                const isMoving = golem.velocity && golem.velocity.length() > 0.1;
+                
+                if (isMoving && !movementDetected) {
+                    movementDetected = true;
+                    updateFeatureStatus('animationStatus', 'pass', 'Walking animations active! 🚶‍♂️');
+                }
+            }
+            
+            animationTimer++;
+            if (animationTimer > 300 && !movementDetected) { // 15 seconds
+                updateFeatureStatus('animationStatus', 'pending', 'Move with WASD to test animations');
+            }
+        }
+        
+        // Test health visualization
+        let healthBarsDetected = false;
+        let enemyCount = 0;
+        
+        function testHealthVisualization() {
+            if (window.game?.gameEngine?.enemies) {
+                const enemies = Array.from(window.game.gameEngine.enemies);
+                enemyCount = enemies.length;
+                
+                if (enemies.length > 0 && !healthBarsDetected) {
+                    // Check if enemies have health bars
+                    const hasHealthBars = enemies.some(enemy => 
+                        enemy.healthBar && enemy.healthBarGroup
+                    );
+                    
+                    if (hasHealthBars) {
+                        healthBarsDetected = true;
+                        updateFeatureStatus('healthStatus', 'pass', `Health bars active on ${enemies.length} enemies! ❤️`);
+                    }
+                }
+            }
+            
+            if (enemyCount === 0) {
+                updateFeatureStatus('healthStatus', 'pending', 'Waiting for enemies to spawn (30s)...');
+            }
+        }
+        
+        // Test forest boundaries
+        let boundaryTested = false;
+        
+        function testBoundaries() {
+            if (window.game?.gameEngine?.physicsSystem) {
+                const physics = window.game.gameEngine.physicsSystem;
+                const colliderCount = physics.worldColliders ? physics.worldColliders.size : 0;
+                
+                if (colliderCount > 50 && !boundaryTested) {
+                    boundaryTested = true;
+                    updateFeatureStatus('boundaryStatus', 'pass', `Forest boundary active! ${colliderCount} colliders 🌲`);
+                } else if (colliderCount > 0) {
+                    updateFeatureStatus('boundaryStatus', 'pending', `Loading boundaries... ${colliderCount} colliders`);
+                }
+            }
+        }
+        
+        // Monitor for damage events
+        let damageEventsDetected = 0;
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            
+            const message = args.join(' ');
+            if (message.includes('Enemy takes') && message.includes('damage')) {
+                damageEventsDetected++;
+                if (damageEventsDetected === 1) {
+                    updateFeatureStatus('healthStatus', 'pass', `Damage visualization working! ${damageEventsDetected} hits 💥`);
+                }
+            }
+        };
+        
+        // Run tests periodically
+        setInterval(() => {
+            testAnimations();
+            testHealthVisualization();
+            testBoundaries();
+        }, 500);
+        
+        // Initial status
+        setTimeout(() => {
+            updateFeatureStatus('animationStatus', 'pending', 'Initializing character animations...');
+            updateFeatureStatus('healthStatus', 'pending', 'Setting up health visualization...');
+            updateFeatureStatus('boundaryStatus', 'pending', 'Generating forest boundaries...');
+        }, 1000);
+        
+        console.log('🧪 All feature tests initialized - Start moving and attacking!');
+    </script>
+</body>
+</html> 

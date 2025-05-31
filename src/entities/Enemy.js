@@ -153,6 +153,55 @@ class Enemy extends Entity {
             leftEye: leftEye,
             rightEye: rightEye
         };
+        
+        // Create health bar
+        this.createHealthBar();
+    }
+
+    createHealthBar() {
+        // Create health bar above enemy
+        const healthBarGroup = new THREE.Group();
+        
+        // Background bar (red)
+        const bgGeometry = new THREE.PlaneGeometry(1.5, 0.2);
+        const bgMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000, transparent: true, opacity: 0.8 });
+        const bgBar = new THREE.Mesh(bgGeometry, bgMaterial);
+        healthBarGroup.add(bgBar);
+        
+        // Health bar (green)
+        const healthGeometry = new THREE.PlaneGeometry(1.5, 0.2);
+        const healthMaterial = new THREE.MeshBasicMaterial({ color: 0x00FF00, transparent: true, opacity: 0.9 });
+        this.healthBar = new THREE.Mesh(healthGeometry, healthMaterial);
+        this.healthBar.position.z = 0.01; // Slightly in front
+        healthBarGroup.add(this.healthBar);
+        
+        // Position health bar above enemy
+        healthBarGroup.position.y = 4.0; // Above head
+        healthBarGroup.lookAt(0, 4.0, 1); // Face camera initially
+        
+        this.mesh.add(healthBarGroup);
+        this.healthBarGroup = healthBarGroup;
+    }
+
+    updateHealthBar() {
+        if (!this.healthBar) return;
+        
+        const healthPercent = this.currentHealth / this.maxHealth;
+        this.healthBar.scale.x = Math.max(0, healthPercent);
+        
+        // Change color based on health
+        if (healthPercent > 0.6) {
+            this.healthBar.material.color.setHex(0x00FF00); // Green
+        } else if (healthPercent > 0.3) {
+            this.healthBar.material.color.setHex(0xFFFF00); // Yellow
+        } else {
+            this.healthBar.material.color.setHex(0xFF0000); // Red
+        }
+        
+        // Make health bar face camera
+        if (this.healthBarGroup && window.game?.gameEngine?.camera) {
+            this.healthBarGroup.lookAt(window.game.gameEngine.camera.position);
+        }
     }
 
     update(deltaTime) {
@@ -168,6 +217,19 @@ class Enemy extends Entity {
         
         // Check if stuck
         this.checkIfStuck(deltaTime);
+        
+        // Update walking animation
+        this.updateWalkingAnimation(deltaTime);
+        
+        // Update health bar
+        this.updateHealthBar();
+        
+        // Update mesh transform
+        if (this.mesh) {
+            this.mesh.position.copy(this.position);
+            this.mesh.rotation.copy(this.rotation);
+            this.mesh.scale.copy(this.scale);
+        }
     }
 
     updateAI(deltaTime) {
@@ -345,8 +407,11 @@ class Enemy extends Entity {
             audioManager.playSound('hit', this.position, 0.6);
         }
         
-        // Flash red when hit
-        this.flashRed();
+        // Flash red when hit and show damage on body
+        this.showDamageEffect();
+        
+        // Create floating damage text
+        this.createDamageText(amount);
         
         if (this.currentHealth <= 0) {
             this.die(attacker);
@@ -356,7 +421,7 @@ class Enemy extends Entity {
         }
     }
 
-    flashRed() {
+    showDamageEffect() {
         if (!this.bodyParts) return;
         
         // Store original materials
@@ -369,6 +434,12 @@ class Enemy extends Entity {
             }
         });
         
+        // Add damage cracks/wounds based on health
+        const healthPercent = this.currentHealth / this.maxHealth;
+        if (healthPercent < 0.7) {
+            this.addWounds();
+        }
+        
         // Restore original materials after flash
         setTimeout(() => {
             Object.keys(originalMaterials).forEach(partName => {
@@ -377,7 +448,80 @@ class Enemy extends Entity {
                     part.material = originalMaterials[partName];
                 }
             });
-        }, 100);
+        }, 150);
+    }
+
+    addWounds() {
+        // Add visual wounds/damage to the enemy body
+        const healthPercent = this.currentHealth / this.maxHealth;
+        
+        if (healthPercent < 0.5 && !this.hasWounds) {
+            // Add dark spots (wounds) to body
+            const woundMaterial = new THREE.MeshBasicMaterial({ color: 0x330000 });
+            
+            for (let i = 0; i < 3; i++) {
+                const woundGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.05);
+                const wound = new THREE.Mesh(woundGeometry, woundMaterial);
+                wound.position.set(
+                    (Math.random() - 0.5) * 0.8,
+                    1.95 + (Math.random() - 0.5) * 1.0,
+                    0.32
+                );
+                this.mesh.add(wound);
+            }
+            this.hasWounds = true;
+        }
+        
+        if (healthPercent < 0.3 && !this.hasSevereWounds) {
+            // Make enemy look more damaged - darker skin
+            Object.keys(this.bodyParts).forEach(partName => {
+                const part = this.bodyParts[partName];
+                if (part && part.material && part.material.color) {
+                    part.material.color.multiplyScalar(0.7); // Darken
+                }
+            });
+            this.hasSevereWounds = true;
+        }
+    }
+
+    createDamageText(damage) {
+        // Create floating damage number
+        const scene = window.game?.gameEngine?.scene;
+        if (!scene) return;
+        
+        // Create text geometry (simplified - using a colored sphere for now)
+        const textGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+        const textMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xFF0000,
+            transparent: true,
+            opacity: 1.0
+        });
+        const damageIndicator = new THREE.Mesh(textGeometry, textMaterial);
+        
+        // Position above enemy
+        damageIndicator.position.copy(this.position);
+        damageIndicator.position.y += 3.5;
+        damageIndicator.position.x += (Math.random() - 0.5) * 1.0;
+        
+        scene.add(damageIndicator);
+        
+        // Animate floating up and fading
+        let time = 0;
+        const animateDamage = () => {
+            time += 0.05;
+            damageIndicator.position.y += 0.05;
+            damageIndicator.material.opacity = Math.max(0, 1.0 - time);
+            
+            if (time < 1.0) {
+                requestAnimationFrame(animateDamage);
+            } else {
+                scene.remove(damageIndicator);
+                damageIndicator.geometry.dispose();
+                damageIndicator.material.dispose();
+            }
+        };
+        
+        animateDamage();
     }
 
     die(attacker = null) {
@@ -419,6 +563,41 @@ class Enemy extends Entity {
 
     setState(newState) {
         this.state = newState;
+    }
+
+    updateWalkingAnimation(deltaTime) {
+        if (!this.bodyParts) return;
+        
+        const isMoving = this.velocity.length() > 0.1;
+        
+        if (isMoving) {
+            // Initialize walk time if not exists
+            if (!this.walkTime) this.walkTime = 0;
+            this.walkTime += deltaTime * 6; // Walking speed for zombies
+            
+            // Animate legs (zombie shuffle)
+            const legSwing = Math.sin(this.walkTime) * 0.4; // More dramatic than Iron Golem
+            this.bodyParts.leftLeg.rotation.x = legSwing;
+            this.bodyParts.rightLeg.rotation.x = -legSwing;
+            
+            // Animate arms (zombie-like swaying)
+            const armSwing = Math.sin(this.walkTime + Math.PI/4) * 0.3; // Offset for natural movement
+            this.bodyParts.leftArm.rotation.x = armSwing;
+            this.bodyParts.rightArm.rotation.x = -armSwing;
+            
+            // Add slight head bobbing
+            if (this.bodyParts.head) {
+                this.bodyParts.head.position.y = 2.8 + Math.sin(this.walkTime * 2) * 0.1;
+            }
+            
+        } else {
+            // Reset to neutral pose
+            if (this.bodyParts.leftLeg) this.bodyParts.leftLeg.rotation.x = 0;
+            if (this.bodyParts.rightLeg) this.bodyParts.rightLeg.rotation.x = 0;
+            if (this.bodyParts.leftArm) this.bodyParts.leftArm.rotation.x = 0.3; // Return to zombie pose
+            if (this.bodyParts.rightArm) this.bodyParts.rightArm.rotation.x = -0.3; // Return to zombie pose
+            if (this.bodyParts.head) this.bodyParts.head.position.y = 2.8; // Reset head position
+        }
     }
 }
 

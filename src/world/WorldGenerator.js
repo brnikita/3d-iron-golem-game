@@ -3,6 +3,8 @@ class WorldGenerator {
     constructor() {
         this.worldSize = 100;
         this.villageRadius = 20;
+        this.playgroundRadius = 35; // Safe area for players
+        this.forestBoundaryRadius = 45; // Dense forest boundary
         console.log('WorldGenerator initialized');
     }
 
@@ -21,6 +23,10 @@ class WorldGenerator {
         // Generate environment objects
         const environment = this.generateEnvironment();
         world.add(environment);
+        
+        // Generate forest boundaries
+        const forestBoundary = this.generateForestBoundary();
+        world.add(forestBoundary);
         
         console.log('World generated');
         return world;
@@ -166,16 +172,17 @@ class WorldGenerator {
         const environment = new THREE.Group();
         environment.name = 'Environment';
         
-        // Generate trees around the village
-        for (let i = 0; i < 20; i++) {
+        // Generate trees around the village (but inside playground area)
+        for (let i = 0; i < 15; i++) {
             const tree = this.createTree();
             
-            // Position trees outside village area
+            // Position trees outside village area but inside playground
             let x, z;
             do {
-                x = (Math.random() - 0.5) * this.worldSize * 0.8;
-                z = (Math.random() - 0.5) * this.worldSize * 0.8;
-            } while (Math.sqrt(x * x + z * z) < this.villageRadius + 5);
+                x = (Math.random() - 0.5) * this.playgroundRadius * 1.5;
+                z = (Math.random() - 0.5) * this.playgroundRadius * 1.5;
+            } while (Math.sqrt(x * x + z * z) < this.villageRadius + 5 || 
+                     Math.sqrt(x * x + z * z) > this.playgroundRadius - 5);
             
             tree.position.set(x, 0, z);
             tree.name = `Tree_${i}`;
@@ -183,13 +190,13 @@ class WorldGenerator {
         }
         
         // Generate rocks
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 8; i++) {
             const rock = this.createRock();
             
             let x, z;
             do {
-                x = (Math.random() - 0.5) * this.worldSize * 0.6;
-                z = (Math.random() - 0.5) * this.worldSize * 0.6;
+                x = (Math.random() - 0.5) * this.playgroundRadius * 1.2;
+                z = (Math.random() - 0.5) * this.playgroundRadius * 1.2;
             } while (Math.sqrt(x * x + z * z) < this.villageRadius + 2);
             
             rock.position.set(x, 0, z);
@@ -262,6 +269,134 @@ class WorldGenerator {
         }
         
         return spawnPoints;
+    }
+
+    generateForestBoundary() {
+        const forestBoundary = new THREE.Group();
+        forestBoundary.name = 'ForestBoundary';
+        
+        // Create dense forest wall around the playground
+        const treeCount = 80; // Dense forest
+        for (let i = 0; i < treeCount; i++) {
+            const tree = this.createBoundaryTree();
+            
+            // Position trees in a ring around the playground
+            const angle = (i / treeCount) * Math.PI * 2;
+            const radiusVariation = (Math.random() - 0.5) * 8; // Random depth
+            const radius = this.forestBoundaryRadius + radiusVariation;
+            
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            
+            tree.position.set(x, 0, z);
+            tree.name = `BoundaryTree_${i}`;
+            
+            // Add collision data
+            tree.userData.isCollider = true;
+            tree.userData.collisionRadius = 2.0;
+            
+            forestBoundary.add(tree);
+        }
+        
+        // Add some additional random trees for density
+        for (let i = 0; i < 40; i++) {
+            const tree = this.createBoundaryTree();
+            
+            // Position between boundary and edge
+            const angle = Math.random() * Math.PI * 2;
+            const radius = this.forestBoundaryRadius + 5 + Math.random() * 15;
+            
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            
+            tree.position.set(x, 0, z);
+            tree.name = `ExtraTree_${i}`;
+            
+            // Add collision data
+            tree.userData.isCollider = true;
+            tree.userData.collisionRadius = 2.0;
+            
+            forestBoundary.add(tree);
+        }
+        
+        // Create invisible collision boundary
+        this.createInvisibleBoundary(forestBoundary);
+        
+        return forestBoundary;
+    }
+
+    createBoundaryTree() {
+        const tree = new THREE.Group();
+        
+        // Larger, more imposing trees for boundary
+        const trunkHeight = 6 + Math.random() * 4;
+        const trunkRadius = 0.4 + Math.random() * 0.3;
+        
+        // Tree trunk
+        const trunkGeometry = new THREE.CylinderGeometry(trunkRadius * 0.8, trunkRadius, trunkHeight);
+        const trunkMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
+        
+        const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+        trunk.position.y = trunkHeight / 2;
+        trunk.castShadow = true;
+        
+        tree.add(trunk);
+        
+        // Tree leaves (larger and darker)
+        const leavesRadius = 3 + Math.random() * 2;
+        const leavesGeometry = new THREE.SphereGeometry(leavesRadius, 8, 6);
+        const leavesMaterial = new THREE.MeshLambertMaterial({ color: 0x1B5E20 }); // Darker green
+        
+        const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
+        leaves.position.y = trunkHeight + leavesRadius * 0.5;
+        leaves.castShadow = true;
+        
+        tree.add(leaves);
+        
+        // Add some undergrowth
+        if (Math.random() > 0.5) {
+            const bushGeometry = new THREE.SphereGeometry(1 + Math.random() * 0.5, 6, 4);
+            const bushMaterial = new THREE.MeshLambertMaterial({ color: 0x2E7D32 });
+            
+            const bush = new THREE.Mesh(bushGeometry, bushMaterial);
+            bush.position.y = 0.5;
+            bush.position.x = (Math.random() - 0.5) * 2;
+            bush.position.z = (Math.random() - 0.5) * 2;
+            bush.castShadow = true;
+            
+            tree.add(bush);
+        }
+        
+        return tree;
+    }
+
+    createInvisibleBoundary(forestBoundary) {
+        // Create invisible collision cylinders around the boundary
+        const boundarySegments = 32;
+        for (let i = 0; i < boundarySegments; i++) {
+            const angle = (i / boundarySegments) * Math.PI * 2;
+            const x = Math.cos(angle) * this.forestBoundaryRadius;
+            const z = Math.sin(angle) * this.forestBoundaryRadius;
+            
+            // Create invisible collision object
+            const colliderGeometry = new THREE.CylinderGeometry(3, 3, 10);
+            const colliderMaterial = new THREE.MeshBasicMaterial({ 
+                transparent: true, 
+                opacity: 0,
+                visible: false 
+            });
+            
+            const collider = new THREE.Mesh(colliderGeometry, colliderMaterial);
+            collider.position.set(x, 5, z);
+            collider.name = `BoundaryCollider_${i}`;
+            
+            // Add collision data
+            collider.userData.isCollider = true;
+            collider.userData.isBoundary = true;
+            collider.userData.collisionRadius = 3.0;
+            
+            forestBoundary.add(collider);
+        }
     }
 }
 

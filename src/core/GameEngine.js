@@ -195,6 +195,11 @@ class GameEngine {
         this.world = this.worldGenerator.generateWorld();
         this.scene.add(this.world);
         
+        // Initialize physics colliders from world objects
+        if (this.physicsSystem) {
+            this.physicsSystem.initializeWorldColliders(this.world);
+        }
+        
         console.log('World initialized');
     }
 
