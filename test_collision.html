@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collision Test - Iron Golem</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        #instructions {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+        
+        #status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="instructions">
+        <h3>🔧 Collision Test</h3>
+        <p><strong>WASD</strong> - Move Iron Golem</p>
+        <p><strong>Mouse</strong> - Look around</p>
+        <p><strong>F3</strong> - Toggle collision debug</p>
+        <p><strong>ESC</strong> - Exit pointer lock</p>
+        <br>
+        <p>Try walking into buildings, trees, and rocks!</p>
+        <p>You should be blocked by collision boundaries.</p>
+    </div>
+    
+    <div id="status">
+        <div id="loadingStatus">Loading...</div>
+        <div id="gameStatus" style="display: none;">
+            <p>Position: <span id="position">0, 0, 0</span></p>
+            <p>Collisions: <span id="collisionCount">0</span></p>
+            <p>FPS: <span id="fps">0</span></p>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Game Core -->
+    <script src="src/core/AssetLoader.js"></script>
+    <script src="src/core/InputManager.js"></script>
+    <script src="src/systems/PhysicsSystem.js"></script>
+    
+    <!-- Entities -->
+    <script src="src/entities/Entity.js"></script>
+    <script src="src/entities/IronGolem.js"></script>
+    
+    <!-- World -->
+    <script src="src/world/WorldGenerator.js"></script>
+    
+    <!-- Test Script -->
+    <script>
+        class CollisionTest {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.ironGolem = null;
+                this.physicsSystem = null;
+                this.inputManager = null;
+                this.assetLoader = null;
+                this.worldGenerator = null;
+                this.world = null;
+                
+                this.clock = new THREE.Clock();
+                this.frameCount = 0;
+                this.lastFPSUpdate = 0;
+                this.collisionCount = 0;
+                
+                this.init();
+            }
+            
+            async init() {
+                try {
+                    // Initialize Three.js
+                    this.initThreeJS();
+                    
+                    // Initialize systems
+                    this.initSystems();
+                    
+                    // Load assets
+                    await this.loadAssets();
+                    
+                    // Create world
+                    this.createWorld();
+                    
+                    // Create player
+                    this.createPlayer();
+                    
+                    // Setup input
+                    this.setupInput();
+                    
+                    // Start game loop
+                    this.start();
+                    
+                    // Update UI
+                    document.getElementById('loadingStatus').style.display = 'none';
+                    document.getElementById('gameStatus').style.display = 'block';
+                    
+                    console.log('Collision test initialized successfully');
+                } catch (error) {
+                    console.error('Failed to initialize collision test:', error);
+                    document.getElementById('loadingStatus').textContent = 'Error: ' + error.message;
+                }
+            }
+            
+            initThreeJS() {
+                // Scene
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x87CEEB);
+                
+                // Camera
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.camera.position.set(0, 10, 15);
+                
+                // Renderer
+                this.renderer = new THREE.WebGLRenderer({ 
+                    canvas: document.getElementById('gameCanvas'),
+                    antialias: true 
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                
+                // Lighting
+                const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+                this.scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(50, 50, 25);
+                directionalLight.castShadow = true;
+                directionalLight.shadow.mapSize.width = 2048;
+                directionalLight.shadow.mapSize.height = 2048;
+                this.scene.add(directionalLight);
+                
+                // Handle resize
+                window.addEventListener('resize', () => this.handleResize());
+            }
+            
+            initSystems() {
+                this.physicsSystem = new PhysicsSystem();
+                this.inputManager = new InputManager();
+                this.assetLoader = new AssetLoader();
+                this.worldGenerator = new WorldGenerator();
+                
+                // Make systems globally accessible for compatibility
+                window.game = {
+                    gameEngine: {
+                        physicsSystem: this.physicsSystem,
+                        assetLoader: this.assetLoader,
+                        scene: this.scene
+                    }
+                };
+            }
+            
+            async loadAssets() {
+                await this.assetLoader.loadCriticalAssets();
+            }
+            
+            createWorld() {
+                this.world = this.worldGenerator.generateWorld();
+                this.scene.add(this.world);
+                
+                // Initialize physics colliders
+                this.physicsSystem.initializeWorldColliders(this.world);
+                
+                console.log(`World created with ${this.physicsSystem.worldColliders.size} colliders`);
+            }
+            
+            createPlayer() {
+                this.ironGolem = new IronGolem(new THREE.Vector3(0, 0, 0));
+                this.ironGolem.initialize();
+                this.scene.add(this.ironGolem.mesh);
+                
+                // Add to physics system
+                this.physicsSystem.addEntity(this.ironGolem);
+                
+                console.log('Iron Golem created');
+            }
+            
+            setupInput() {
+                // Mouse look
+                this.inputManager.onMouseMove = (deltaX, deltaY) => {
+                    if (this.ironGolem) {
+                        this.ironGolem.rotateCamera(deltaX, deltaY);
+                    }
+                };
+                
+                // Override physics collision resolution to count collisions
+                const originalResolve = this.physicsSystem.resolveEntityWorldCollision.bind(this.physicsSystem);
+                this.physicsSystem.resolveEntityWorldCollision = (entity, collider) => {
+                    if (entity === this.ironGolem) {
+                        this.collisionCount++;
+                    }
+                    return originalResolve(entity, collider);
+                };
+            }
+            
+            start() {
+                this.clock.start();
+                this.gameLoop();
+            }
+            
+            gameLoop() {
+                const deltaTime = Math.min(this.clock.getDelta(), 1/30);
+                
+                // Update systems
+                this.inputManager.update(deltaTime);
+                this.physicsSystem.update(deltaTime);
+                
+                // Update player
+                if (this.ironGolem) {
+                    this.ironGolem.update(deltaTime);
+                    this.updateCamera();
+                    this.updateUI();
+                }
+                
+                // Render
+                this.renderer.render(this.scene, this.camera);
+                
+                // Update FPS
+                this.frameCount++;
+                const now = performance.now();
+                if (now - this.lastFPSUpdate > 1000) {
+                    const fps = Math.round(this.frameCount * 1000 / (now - this.lastFPSUpdate));
+                    document.getElementById('fps').textContent = fps;
+                    this.frameCount = 0;
+                    this.lastFPSUpdate = now;
+                }
+                
+                requestAnimationFrame(() => this.gameLoop());
+            }
+            
+            updateCamera() {
+                const cameraPosition = this.ironGolem.getCameraPosition();
+                const cameraTarget = this.ironGolem.getCameraTarget();
+                
+                this.camera.position.lerp(cameraPosition, 0.1);
+                this.camera.lookAt(cameraTarget);
+            }
+            
+            updateUI() {
+                const pos = this.ironGolem.position;
+                document.getElementById('position').textContent = 
+                    `${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)}`;
+                document.getElementById('collisionCount').textContent = this.collisionCount;
+            }
+            
+            handleResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        
+        // Start the test when page loads
+        window.addEventListener('load', () => {
+            new CollisionTest();
+        });
+    </script>
+</body>
+</html> 

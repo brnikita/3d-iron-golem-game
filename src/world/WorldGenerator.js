@@ -133,6 +133,11 @@ class WorldGenerator {
         // Position building
         building.position.set(x, 0, z);
         
+        // Add collision data for physics system
+        building.userData.isCollider = true;
+        building.userData.collisionRadius = Math.max(width, depth) * 0.6; // Slightly smaller than visual size
+        building.userData.type = 'building';
+        
         return building;
     }
 
@@ -165,6 +170,11 @@ class WorldGenerator {
         
         well.add(rim);
         
+        // Add collision data for physics system
+        well.userData.isCollider = true;
+        well.userData.collisionRadius = 2.2; // Slightly larger than visual radius
+        well.userData.type = 'well';
+        
         return well;
     }
 
@@ -186,6 +196,12 @@ class WorldGenerator {
             
             tree.position.set(x, 0, z);
             tree.name = `Tree_${i}`;
+            
+            // Add collision data for physics system
+            tree.userData.isCollider = true;
+            tree.userData.collisionRadius = 2.0; // Account for trunk and lower branches
+            tree.userData.type = 'tree';
+            
             environment.add(tree);
         }
         
@@ -201,6 +217,12 @@ class WorldGenerator {
             
             rock.position.set(x, 0, z);
             rock.name = `Rock_${i}`;
+            
+            // Add collision data for physics system
+            rock.userData.isCollider = true;
+            rock.userData.collisionRadius = rock.userData.size + 0.5; // Slightly larger than visual size
+            rock.userData.type = 'rock';
+            
             environment.add(rock);
         }
         
@@ -250,6 +272,9 @@ class WorldGenerator {
         rockMesh.receiveShadow = true;
         
         rock.add(rockMesh);
+        
+        // Store size for collision detection
+        rock.userData.size = size;
         
         return rock;
     }

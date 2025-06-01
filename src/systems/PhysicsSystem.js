@@ -139,7 +139,11 @@ class PhysicsSystem {
     checkEntityWorldCollision(entity, collider) {
         if (!collider.userData || !collider.userData.collisionRadius) return false;
         
-        const distance = entity.position.distanceTo(collider.position);
+        // Use 2D distance for horizontal collision (ignore Y axis)
+        const dx = entity.position.x - collider.position.x;
+        const dz = entity.position.z - collider.position.z;
+        const distance = Math.sqrt(dx * dx + dz * dz);
+        
         const minDistance = entity.collisionRadius + collider.userData.collisionRadius;
         
         return distance < minDistance;
@@ -147,12 +151,22 @@ class PhysicsSystem {
 
     resolveEntityWorldCollision(entity, collider) {
         // Push entity away from collider
-        const direction = entity.position.clone().sub(collider.position);
-        direction.y = 0; // Only horizontal collision
-        direction.normalize();
+        const dx = entity.position.x - collider.position.x;
+        const dz = entity.position.z - collider.position.z;
+        const distance = Math.sqrt(dx * dx + dz * dz);
         
-        const overlap = (entity.collisionRadius + collider.userData.collisionRadius) - 
-                       entity.position.distanceTo(collider.position);
+        // Avoid division by zero
+        if (distance < 0.001) {
+            // If entities are at same position, push in random direction
+            const angle = Math.random() * Math.PI * 2;
+            const direction = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
+            entity.position.add(direction.multiplyScalar(entity.collisionRadius + 0.5));
+            return;
+        }
+        
+        const direction = new THREE.Vector3(dx / distance, 0, dz / distance);
+        
+        const overlap = (entity.collisionRadius + collider.userData.collisionRadius) - distance;
         
         if (overlap > 0) {
             entity.position.add(direction.multiplyScalar(overlap + 0.1));
@@ -164,6 +178,16 @@ class PhysicsSystem {
                     entity.velocity.sub(direction.multiplyScalar(velocityDot));
                 }
             }
+            
+            // Debug logging for collision
+            if (collider.userData.type) {
+                // Only log occasionally to avoid spam
+                if (!this.lastCollisionLog) this.lastCollisionLog = 0;
+                if (Date.now() - this.lastCollisionLog > 1000) { // Log once per second max
+                    console.log(`Entity collided with ${collider.userData.type}, pushed by ${overlap.toFixed(2)} units`);
+                    this.lastCollisionLog = Date.now();
+                }
+            }
         }
     }
 
@@ -172,6 +196,56 @@ class PhysicsSystem {
         this.entities.clear();
         this.staticObjects.clear();
         console.log('PhysicsSystem disposed');
+    }
+
+    // Debug visualization for collision boundaries
+    enableDebugVisualization(scene) {
+        if (this.debugVisualization) return; // Already enabled
+        
+        this.debugVisualization = true;
+        this.debugMeshes = new Set();
+        
+        // Create debug meshes for all world colliders
+        this.worldColliders.forEach(collider => {
+            if (collider.userData && collider.userData.collisionRadius) {
+                this.createDebugMesh(collider, scene);
+            }
+        });
+        
+        console.log(`Debug visualization enabled for ${this.debugMeshes.size} colliders`);
+    }
+    
+    createDebugMesh(collider, scene) {
+        const radius = collider.userData.collisionRadius;
+        const geometry = new THREE.RingGeometry(radius - 0.1, radius + 0.1, 16);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0xFF0000, 
+            transparent: true, 
+            opacity: 0.3,
+            side: THREE.DoubleSide
+        });
+        
+        const debugMesh = new THREE.Mesh(geometry, material);
+        debugMesh.position.copy(collider.position);
+        debugMesh.position.y = 0.1; // Slightly above ground
+        debugMesh.rotation.x = -Math.PI / 2; // Lay flat
+        
+        scene.add(debugMesh);
+        this.debugMeshes.add(debugMesh);
+    }
+    
+    disableDebugVisualization(scene) {
+        if (!this.debugVisualization) return;
+        
+        this.debugMeshes.forEach(mesh => {
+            scene.remove(mesh);
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+        });
+        
+        this.debugMeshes.clear();
+        this.debugVisualization = false;
+        console.log('Debug visualization disabled');
     }
 }
 

@@ -257,6 +257,20 @@ class InputManager {
                 // Toggle fullscreen
                 this.toggleFullscreen();
                 break;
+                
+            case 'F3':
+                // Toggle collision debug visualization
+                if (window.game && window.game.gameEngine && window.game.gameEngine.physicsSystem) {
+                    const physics = window.game.gameEngine.physicsSystem;
+                    const scene = window.game.gameEngine.scene;
+                    
+                    if (physics.debugVisualization) {
+                        physics.disableDebugVisualization(scene);
+                    } else {
+                        physics.enableDebugVisualization(scene);
+                    }
+                }
+                break;
         }
     }
 
