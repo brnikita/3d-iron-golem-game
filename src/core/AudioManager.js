@@ -33,6 +33,9 @@ class AudioManager {
             'attack': [
                 'assets/audio/sword_slash.mp3'
             ],
+            'enemy_attack': [
+                'assets/audio/sword_slash.mp3'  // Reuse sword slash for enemy attack
+            ],
             'hit': [
                 'assets/audio/metal_hit.mp3'
             ],
@@ -149,6 +152,7 @@ class AudioManager {
         // Create simple fallback sounds for when real audio fails
         this.createFallbackSound('footstep');
         this.createFallbackSound('attack');
+        this.createFallbackSound('enemy_attack');
         this.createFallbackSound('hit');
         this.createFallbackSound('resource_collect');
         this.createFallbackSound('enemy_death');
@@ -167,6 +171,11 @@ class AudioManager {
             case 'attack':
                 duration = 0.3;
                 frequency = 200;
+                type = 'sweep';
+                break;
+            case 'enemy_attack':
+                duration = 0.3;
+                frequency = 180;
                 type = 'sweep';
                 break;
             case 'hit':

@@ -7,7 +7,7 @@ class Enemy extends Entity {
         this.currentHealth = this.maxHealth;
         this.moveSpeed = 2.0;
         this.attackDamage = 10;
-        this.attackRange = 2.0;
+        this.attackRange = 2.5;
         this.attackCooldown = 1500; // milliseconds
         this.lastAttackTime = 0;
         this.isEnemy = true;
@@ -243,19 +243,28 @@ class Enemy extends Entity {
         
         const distanceToTarget = this.distanceTo(this.target);
         
+        // Add periodic debug logging
+        if (!this.lastStateLog || Date.now() - this.lastStateLog > 1000) {
+            console.log(`Enemy state: ${this.state}, distance: ${distanceToTarget.toFixed(2)}, attackRange: ${this.attackRange}`);
+            this.lastStateLog = Date.now();
+        }
+        
         // State machine
         switch (this.state) {
             case 'idle':
                 if (distanceToTarget <= this.detectionRange) {
                     this.state = 'chasing';
+                    console.log('Enemy: idle -> chasing');
                 }
                 break;
                 
             case 'chasing':
                 if (distanceToTarget <= this.attackRange) {
                     this.state = 'attacking';
+                    console.log(`🎯 Enemy: chasing -> attacking! Distance: ${distanceToTarget.toFixed(2)}`);
                 } else if (distanceToTarget > this.detectionRange * 1.5) {
                     this.state = 'idle';
+                    console.log('Enemy: chasing -> idle (too far)');
                 } else {
                     this.moveTowardsTarget(deltaTime);
                 }
@@ -264,6 +273,7 @@ class Enemy extends Entity {
             case 'attacking':
                 if (distanceToTarget > this.attackRange) {
                     this.state = 'chasing';
+                    console.log('Enemy: attacking -> chasing (out of range)');
                 } else {
                     this.attackTarget();
                 }
@@ -297,18 +307,28 @@ class Enemy extends Entity {
     }
 
     attackTarget() {
-        if (!this.target || !this.canAttack()) return;
+        if (!this.target) {
+            console.log('❌ Enemy attack failed: No target');
+            return;
+        }
         
-        console.log('Enemy attacks Iron Golem!');
+        if (!this.canAttack()) {
+            console.log(`❌ Enemy attack on cooldown: ${(this.attackCooldown - (Date.now() - this.lastAttackTime))/1000}s remaining`);
+            return;
+        }
+        
+        console.log('🧟 Enemy attacks Iron Golem!');
+        console.log(`Attack details: damage=${this.attackDamage}, distance=${this.distanceTo(this.target).toFixed(2)}`);
         
         // Deal damage to target
-        this.target.takeDamage(this.attackDamage, this);
+        const result = this.target.takeDamage(this.attackDamage, this);
+        console.log(`Damage dealt: ${result ? 'SUCCESS' : 'FAILED (invulnerable?)'}`);
         
         // Set attack cooldown
         this.lastAttackTime = Date.now();
         
         // Play attack animation
-        this.playAnimation('attack', false);
+        this.playAttackAnimation();
         
         // Play attack sound
         if (window.game?.gameEngine?.audioManager) {
@@ -353,6 +373,114 @@ class Enemy extends Entity {
         this.position.z += Math.sin(randomAngle) * unstuckDistance;
         
         console.log('Enemy unstuck');
+    }
+
+    playAttackAnimation() {
+        if (!this.bodyParts) return;
+        
+        console.log('🎬 Playing enemy attack animation!');
+        
+        // Store original positions
+        const originalBody = {
+            position: this.bodyParts.body.position.z,
+            rotation: this.bodyParts.body.rotation.x
+        };
+        
+        // Dramatic zombie attack animation
+        // Arms stretch forward aggressively
+        this.bodyParts.leftArm.rotation.x = -2.0; // Arms reach forward
+        this.bodyParts.leftArm.rotation.z = 0.4;
+        this.bodyParts.rightArm.rotation.x = -2.0;
+        this.bodyParts.rightArm.rotation.z = -0.4;
+        
+        // Lunge body forward
+        this.bodyParts.body.position.z = 0.5;
+        this.bodyParts.body.rotation.x = 0.3;
+        
+        // Make eyes flash red
+        if (this.bodyParts.leftEye && this.bodyParts.rightEye) {
+            const originalEyeColor = this.bodyParts.leftEye.material.color.getHex();
+            this.bodyParts.leftEye.material.color.setHex(0xFF0000);
+            this.bodyParts.rightEye.material.color.setHex(0xFF0000);
+            
+            // Flash effect
+            setTimeout(() => {
+                if (this.bodyParts.leftEye && this.bodyParts.rightEye) {
+                    this.bodyParts.leftEye.material.color.setHex(0xFFFFFF);
+                    this.bodyParts.rightEye.material.color.setHex(0xFFFFFF);
+                }
+            }, 100);
+            
+            setTimeout(() => {
+                if (this.bodyParts.leftEye && this.bodyParts.rightEye) {
+                    this.bodyParts.leftEye.material.color.setHex(originalEyeColor);
+                    this.bodyParts.rightEye.material.color.setHex(originalEyeColor);
+                }
+            }, 200);
+        }
+        
+        // Create visual slash effect
+        this.createSlashEffect();
+        
+        // Reset after animation
+        setTimeout(() => {
+            if (this.bodyParts) {
+                // Return arms to zombie pose
+                this.bodyParts.leftArm.rotation.x = 0.3;
+                this.bodyParts.leftArm.rotation.z = 0.3;
+                this.bodyParts.rightArm.rotation.x = -0.3;
+                this.bodyParts.rightArm.rotation.z = -0.3;
+                
+                // Return body
+                this.bodyParts.body.position.z = originalBody.position;
+                this.bodyParts.body.rotation.x = originalBody.rotation;
+            }
+        }, 400);
+    }
+    
+    createSlashEffect() {
+        const scene = window.game?.gameEngine?.scene;
+        if (!scene) return;
+        
+        // Create claw slash effect
+        for (let i = 0; i < 3; i++) {
+            const slashGeometry = new THREE.BoxGeometry(0.1, 1.0, 0.05);
+            const slashMaterial = new THREE.MeshBasicMaterial({
+                color: 0xFFFF00,
+                transparent: true,
+                opacity: 0.8
+            });
+            const slash = new THREE.Mesh(slashGeometry, slashMaterial);
+            
+            // Position in front of enemy with slight offset
+            slash.position.copy(this.position);
+            slash.position.y += 2.5;
+            slash.position.x += (i - 1) * 0.3;
+            const forward = this.getForwardDirection().multiplyScalar(1.5);
+            slash.position.add(forward);
+            slash.rotation.y = this.rotation.y;
+            slash.rotation.z = (i - 1) * 0.3; // Fan out the slashes
+            
+            scene.add(slash);
+            
+            // Animate slash
+            let opacity = 0.8;
+            const animateSlash = () => {
+                opacity -= 0.1;
+                slash.material.opacity = opacity;
+                slash.position.y += 0.05;
+                slash.scale.y *= 0.95;
+                
+                if (opacity > 0) {
+                    requestAnimationFrame(animateSlash);
+                } else {
+                    scene.remove(slash);
+                    slash.geometry.dispose();
+                    slash.material.dispose();
+                }
+            };
+            animateSlash();
+        }
     }
 
     // Override damage method
