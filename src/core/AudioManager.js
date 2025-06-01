@@ -34,7 +34,8 @@ class AudioManager {
                 'assets/audio/sword_slash.mp3'
             ],
             'enemy_attack': [
-                'assets/audio/sword_slash.mp3'  // Reuse sword slash for enemy attack
+                'assets/audio/zombie_attack_sound.mp3',  // Use the new zombie attack sound
+                'assets/audio/sword_slash.mp3'     // Fallback to sword slash if zombie sound is missing
             ],
             'hit': [
                 'assets/audio/metal_hit.mp3'

@@ -332,7 +332,7 @@ class Enemy extends Entity {
         
         // Play attack sound
         if (window.game?.gameEngine?.audioManager) {
-            window.game.gameEngine.audioManager.playSound('enemy_attack', this.position);
+            window.game.gameEngine.audioManager.playSound('enemy_attack', this.position, 0.9);
         }
     }
 
