@@ -58,9 +58,7 @@ class Resource extends Entity {
         // Iron ingot - rectangular metallic block
         this.geometry = new THREE.BoxGeometry(0.8, 0.3, 0.4);
         this.material = new THREE.MeshLambertMaterial({ 
-            color: 0x607D8B,
-            metalness: 0.8,
-            roughness: 0.2
+            color: 0xFFFFFF // Белый цвет как у голема
         });
         this.mesh = new THREE.Mesh(this.geometry, this.material);
     }
@@ -228,7 +226,7 @@ class Resource extends Entity {
 
     getResourceColor() {
         switch (this.resourceType) {
-            case 'ironIngots': return 0x607D8B;
+            case 'ironIngots': return 0xFFFFFF;
             case 'bones': return 0xF5F5DC;
             case 'emeralds': return 0x50C878;
             default: return 0xFFFFFF;

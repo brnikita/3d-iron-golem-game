@@ -660,6 +660,9 @@ class Enemy extends Entity {
         
         console.log('Enemy died');
         
+        // Call onDeath to notify systems
+        this.onDeath();
+        
         // Play death sound
         const audioManager = window.game?.gameEngine?.audioManager;
         if (audioManager) {

@@ -403,6 +403,9 @@ class ZombieMutantBoss extends Enemy {
         
         console.log('🧟‍♂️💀 MUTANT BOSS DEFEATED!');
         
+        // Call onDeath to notify systems (including wave system)
+        this.onDeath();
+        
         // Удаляем ауру ярости
         if (this.rageAura && this.rageAura.parent) {
             this.rageAura.parent.remove(this.rageAura);

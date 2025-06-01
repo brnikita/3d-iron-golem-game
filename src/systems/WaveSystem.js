@@ -2,13 +2,14 @@
 class WaveSystem {
     constructor() {
         this.currentWave = 0;
-        this.waveInterval = 30000; // 30 seconds between waves
+        this.waveInterval = 5000; // 5 seconds between waves (reduced for better gameplay)
         this.lastWaveTime = 0;
         this.isWaveActive = false;
         this.enemiesRemaining = 0;
         this.enemiesSpawned = 0;
         this.bossSpawned = false; // Флаг для отслеживания появления босса
         this.shouldSpawnBoss = false; // Флаг для определения, нужно ли спавнить босса
+        this.waveCompleted = false; // Флаг завершения волны
         
         console.log('WaveSystem initialized');
     }
@@ -16,8 +17,13 @@ class WaveSystem {
     update(deltaTime) {
         const currentTime = Date.now();
         
-        // Check if it's time for a new wave
-        if (!this.isWaveActive && currentTime - this.lastWaveTime >= this.waveInterval) {
+        // Check if it's time for a new wave (only if previous wave is completed)
+        if (!this.isWaveActive && this.waveCompleted && currentTime - this.lastWaveTime >= this.waveInterval) {
+            this.startNextWave();
+        }
+        
+        // Start first wave immediately
+        if (this.currentWave === 0 && !this.isWaveActive) {
             this.startNextWave();
         }
         
@@ -27,13 +33,17 @@ class WaveSystem {
         }
         
         // Check if current wave is complete
-        // Волна завершается если:
-        // 1. Не должно быть босса и все враги уничтожены
-        // 2. Должен быть босс, он заспавнен и все враги (включая босса) уничтожены
+        // Волна завершается если все враги уничтожены (включая босса если он есть)
         if (this.isWaveActive && this.enemiesRemaining <= 0) {
             if (!this.shouldSpawnBoss || (this.shouldSpawnBoss && this.bossSpawned)) {
+                console.log(`🏁 Wave ${this.currentWave} should complete: enemies=${this.enemiesRemaining}, shouldSpawnBoss=${this.shouldSpawnBoss}, bossSpawned=${this.bossSpawned}`);
                 this.completeWave();
             }
+        }
+        
+        // Debug logging every 5 seconds
+        if (this.isWaveActive && currentTime % 5000 < 100) {
+            console.log(`📊 Wave ${this.currentWave} status: enemies=${this.enemiesRemaining}, shouldSpawnBoss=${this.shouldSpawnBoss}, bossSpawned=${this.bossSpawned}`);
         }
     }
 
@@ -42,12 +52,20 @@ class WaveSystem {
         this.isWaveActive = true;
         this.lastWaveTime = Date.now();
         this.bossSpawned = false;
+        this.waveCompleted = false;
         
-        // Определяем, будет ли в этой волне босс (каждые 3 волны начиная с 3-й)
-        this.shouldSpawnBoss = this.currentWave >= 3 && this.currentWave % 3 === 0;
+        // Восстанавливаем здоровье голема до 100% перед новой волной
+        if (window.game?.gameEngine?.ironGolem) {
+            const ironGolem = window.game.gameEngine.ironGolem;
+            ironGolem.currentHealth = ironGolem.maxHealth;
+            console.log('🔧 Iron Golem health restored to 100%');
+        }
+        
+        // Определяем, будет ли в этой волне босс (начиная со 2-й волны, каждые 2 волны)
+        this.shouldSpawnBoss = this.currentWave >= 2 && this.currentWave % 2 === 0;
         
         // Calculate enemies for this wave
-        this.enemiesSpawned = Math.min(5 + this.currentWave * 2, 20);
+        this.enemiesSpawned = Math.min(3 + this.currentWave * 1, 15); // Уменьшил количество врагов
         this.enemiesRemaining = this.enemiesSpawned;
         
         console.log(`Starting wave ${this.currentWave} with ${this.enemiesSpawned} enemies`);
@@ -71,6 +89,8 @@ class WaveSystem {
             
             if (this.shouldSpawnBoss) {
                 window.game.gameEngine.hud.updateWaveStatus('⚠️ Boss Wave! Defeat all zombies first! ⚠️');
+            } else {
+                window.game.gameEngine.hud.updateWaveStatus('In Progress');
             }
         }
     }
@@ -262,6 +282,7 @@ class WaveSystem {
         this.isWaveActive = false;
         this.bossSpawned = false;
         this.shouldSpawnBoss = false;
+        this.waveCompleted = true;
         
         console.log(`Wave ${this.currentWave} completed!`);
         
@@ -269,8 +290,8 @@ class WaveSystem {
         if (window.game?.gameEngine?.ironGolem) {
             const ironGolem = window.game.gameEngine.ironGolem;
             const baseReward = this.currentWave * 2;
-            // Дополнительная награда за волну с боссом
-            const bossBonus = (this.currentWave % 3 === 0 && this.currentWave >= 3) ? this.currentWave : 0;
+            // Дополнительная награда за волну с боссом (каждые 2 волны начиная со 2-й)
+            const bossBonus = (this.currentWave >= 2 && this.currentWave % 2 === 0) ? this.currentWave * 2 : 0;
             const totalReward = baseReward + bossBonus;
             
             ironGolem.addResource('ironIngots', totalReward);
@@ -279,7 +300,7 @@ class WaveSystem {
         
         // Update HUD
         if (window.game?.gameEngine?.hud) {
-            window.game.gameEngine.hud.updateWaveStatus('Wave Complete!');
+            window.game.gameEngine.hud.updateWaveStatus('Wave Complete! Next wave in 5 seconds...');
         }
     }
 
@@ -316,6 +337,7 @@ class WaveSystem {
         this.enemiesSpawned = 0;
         this.bossSpawned = false;
         this.shouldSpawnBoss = false;
+        this.waveCompleted = false;
         console.log('WaveSystem reset');
     }
 

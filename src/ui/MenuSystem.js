@@ -39,33 +39,57 @@ class MenuSystem {
             border-radius: 10px;
         `;
         
-        menuContent.innerHTML = `
-            <h2 style="margin-bottom: 30px;">Game Paused</h2>
-            <button onclick="window.game.gameEngine.resume()" style="
-                display: block;
-                width: 200px;
-                padding: 12px;
-                margin: 10px auto;
-                background: #4a4a4a;
-                color: white;
-                border: 2px solid #fff;
-                font-family: 'Courier New', monospace;
-                font-size: 16px;
-                cursor: pointer;
-            ">Resume</button>
-            <button onclick="window.game.gameEngine.restart()" style="
-                display: block;
-                width: 200px;
-                padding: 12px;
-                margin: 10px auto;
-                background: #4a4a4a;
-                color: white;
-                border: 2px solid #fff;
-                font-family: 'Courier New', monospace;
-                font-size: 16px;
-                cursor: pointer;
-            ">Restart</button>
+        // Создаем заголовок
+        const title = document.createElement('h2');
+        title.textContent = 'Game Paused';
+        title.style.marginBottom = '30px';
+        menuContent.appendChild(title);
+        
+        // Создаем кнопку Resume
+        const resumeButton = document.createElement('button');
+        resumeButton.textContent = 'Resume';
+        resumeButton.style.cssText = `
+            display: block;
+            width: 200px;
+            padding: 12px;
+            margin: 10px auto;
+            background: #4a4a4a;
+            color: white;
+            border: 2px solid #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            cursor: pointer;
         `;
+        resumeButton.addEventListener('click', () => {
+            if (window.game?.gameEngine) {
+                window.game.gameEngine.resume();
+                this.hideCurrentMenu();
+            }
+        });
+        menuContent.appendChild(resumeButton);
+        
+        // Создаем кнопку Restart
+        const restartButton = document.createElement('button');
+        restartButton.textContent = 'Restart';
+        restartButton.style.cssText = `
+            display: block;
+            width: 200px;
+            padding: 12px;
+            margin: 10px auto;
+            background: #4a4a4a;
+            color: white;
+            border: 2px solid #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            cursor: pointer;
+        `;
+        restartButton.addEventListener('click', () => {
+            if (window.game?.gameEngine) {
+                window.game.gameEngine.restart();
+                this.hideCurrentMenu();
+            }
+        });
+        menuContent.appendChild(restartButton);
         
         pauseMenu.appendChild(menuContent);
         document.body.appendChild(pauseMenu);
@@ -99,22 +123,40 @@ class MenuSystem {
             border-radius: 10px;
         `;
         
-        menuContent.innerHTML = `
-            <h2 style="margin-bottom: 30px; color: #ff4444;">Game Over</h2>
-            <p style="margin-bottom: 20px;">The Iron Golem has fallen!</p>
-            <button onclick="window.game.gameEngine.restart()" style="
-                display: block;
-                width: 200px;
-                padding: 12px;
-                margin: 10px auto;
-                background: #4a4a4a;
-                color: white;
-                border: 2px solid #fff;
-                font-family: 'Courier New', monospace;
-                font-size: 16px;
-                cursor: pointer;
-            ">Try Again</button>
+        // Создаем заголовок
+        const title = document.createElement('h2');
+        title.textContent = 'Game Over';
+        title.style.cssText = 'margin-bottom: 30px; color: #ff4444;';
+        menuContent.appendChild(title);
+        
+        // Создаем описание
+        const description = document.createElement('p');
+        description.textContent = 'The Iron Golem has fallen!';
+        description.style.marginBottom = '20px';
+        menuContent.appendChild(description);
+        
+        // Создаем кнопку Try Again
+        const tryAgainButton = document.createElement('button');
+        tryAgainButton.textContent = 'Try Again';
+        tryAgainButton.style.cssText = `
+            display: block;
+            width: 200px;
+            padding: 12px;
+            margin: 10px auto;
+            background: #4a4a4a;
+            color: white;
+            border: 2px solid #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            cursor: pointer;
         `;
+        tryAgainButton.addEventListener('click', () => {
+            if (window.game?.gameEngine) {
+                window.game.gameEngine.restart();
+                this.hideCurrentMenu();
+            }
+        });
+        menuContent.appendChild(tryAgainButton);
         
         gameOverMenu.appendChild(menuContent);
         document.body.appendChild(gameOverMenu);

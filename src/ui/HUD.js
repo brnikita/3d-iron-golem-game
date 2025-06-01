@@ -349,11 +349,6 @@ class HUD {
         if (waveNumberElement) {
             waveNumberElement.textContent = `Wave ${waveNumber}`;
         }
-        
-        const waveStatus = document.getElementById('waveStatus');
-        if (waveStatus) {
-            waveStatus.textContent = 'In Progress';
-        }
     }
 
     updateWaveStatus(status) {
