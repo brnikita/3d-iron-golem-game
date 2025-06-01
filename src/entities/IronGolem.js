@@ -338,10 +338,10 @@ class IronGolem extends Entity {
             
             // Enhanced footstep sounds with ground impact
             if (!this.lastFootstepTime) this.lastFootstepTime = 0;
-            if (this.walkTime - this.lastFootstepTime > 0.8) { // Slightly faster footsteps for better rhythm
+            if (this.walkTime - this.lastFootstepTime > 1.6) { // Footsteps now 2x more rare (was 0.8)
                 const audioManager = window.game?.gameEngine?.audioManager;
                 if (audioManager) {
-                    audioManager.playSound('footstep', this.position, 0.2); // Reduced from 0.6 to 0.2 (3x quieter)
+                    audioManager.playSound('footstep', this.position, 0.1); // Now 2x quieter (was 0.2)
                 }
                 this.lastFootstepTime = this.walkTime;
             }
