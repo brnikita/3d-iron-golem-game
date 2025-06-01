@@ -57,13 +57,15 @@ class IronGolem extends Entity {
         const assetLoader = window.game?.gameEngine?.assetLoader;
         const ironTexture = assetLoader?.getAsset('textures/iron');
         
-        // Create materials
+        // Create materials matching vanilla appearance
         const ironMaterial = new THREE.MeshLambertMaterial({ 
-            color: 0x607D8B,
+            color: 0xD8D1C0, // Match body color
             map: ironTexture
         });
-        const eyeMaterial = new THREE.MeshLambertMaterial({ color: 0xFF4444 }); // Red glowing eyes
+        const eyeSocketMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 }); // Black eye sockets
+        const pupilMaterial = new THREE.MeshLambertMaterial({ color: 0xB02424 }); // Dark red pupils
         const vineMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 }); // Green vines
+        const flowerMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD700 }); // Yellow flower
         
         // Body (main torso)
         const bodyGeometry = new THREE.BoxGeometry(1.8, 2.4, 1.0);
@@ -79,15 +81,29 @@ class IronGolem extends Entity {
         head.castShadow = true;
         this.mesh.add(head);
         
-        // Eyes (glowing red)
-        const eyeGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.1);
-        const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        leftEye.position.set(-0.3, 4.3, 0.6);
-        this.mesh.add(leftEye);
-        
-        const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        rightEye.position.set(0.3, 4.3, 0.6);
-        this.mesh.add(rightEye);
+        // Eyes: black sockets with red pupils like vanilla model
+        const socketGeometry = new THREE.BoxGeometry(0.26, 0.26, 0.05);
+        const pupilGeometry  = new THREE.BoxGeometry(0.1, 0.1, 0.06);
+
+        // Left eye socket
+        const leftSocket = new THREE.Mesh(socketGeometry, eyeSocketMaterial);
+        leftSocket.position.set(-0.3, 4.3, 0.61);
+        this.mesh.add(leftSocket);
+
+        // Left pupil
+        const leftPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+        leftPupil.position.set(-0.3, 4.3, 0.64);
+        this.mesh.add(leftPupil);
+
+        // Right eye socket
+        const rightSocket = new THREE.Mesh(socketGeometry, eyeSocketMaterial);
+        rightSocket.position.set(0.3, 4.3, 0.61);
+        this.mesh.add(rightSocket);
+
+        // Right pupil
+        const rightPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+        rightPupil.position.set(0.3, 4.3, 0.64);
+        this.mesh.add(rightPupil);
         
         // Arms
         const armGeometry = new THREE.BoxGeometry(0.6, 2.0, 0.6);
@@ -144,18 +160,30 @@ class IronGolem extends Entity {
         rightFoot.castShadow = true;
         this.mesh.add(rightFoot);
         
-        // Decorative vines on body
-        const vineGeometry = new THREE.BoxGeometry(0.1, 1.0, 0.1);
-        for (let i = 0; i < 3; i++) {
-            const vine = new THREE.Mesh(vineGeometry, vineMaterial);
-            vine.position.set(
-                (Math.random() - 0.5) * 1.5,
-                2.4 + (Math.random() - 0.5) * 1.0,
-                0.51
-            );
-            vine.rotation.z = (Math.random() - 0.5) * 0.5;
-            this.mesh.add(vine);
-        }
+        // Decorative vines – predefined to match vanilla pattern
+        // Torso vertical vine
+        const torsoVineGeom = new THREE.BoxGeometry(0.12, 1.6, 0.12);
+        const torsoVine = new THREE.Mesh(torsoVineGeom, vineMaterial);
+        torsoVine.position.set(-0.2, 2.6, 0.51);
+        this.mesh.add(torsoVine);
+
+        // Small horizontal vine branch
+        const branchGeom = new THREE.BoxGeometry(0.6, 0.12, 0.12);
+        const branch = new THREE.Mesh(branchGeom, vineMaterial);
+        branch.position.set(0.1, 3.0, 0.51);
+        this.mesh.add(branch);
+
+        // Yellow flower on vine
+        const flowerGeom = new THREE.BoxGeometry(0.22, 0.22, 0.22);
+        const flower = new THREE.Mesh(flowerGeom, flowerMaterial);
+        flower.position.set(0.35, 3.0, 0.6);
+        this.mesh.add(flower);
+
+        // Vine on left arm
+        const armVineGeom = new THREE.BoxGeometry(0.12, 1.0, 0.12);
+        const armVine = new THREE.Mesh(armVineGeom, vineMaterial);
+        armVine.position.set(0, 0, 0.31);
+        leftArm.add(armVine);
         
         // Nose (iron block protruding from face)
         const noseGeometry = new THREE.BoxGeometry(0.3, 0.6, 0.2);
@@ -185,8 +213,8 @@ class IronGolem extends Entity {
             rightHand: rightHand,
             leftLeg: leftLeg,
             rightLeg: rightLeg,
-            leftEye: leftEye,
-            rightEye: rightEye
+            leftEye: leftPupil,
+            rightEye: rightPupil
         };
     }
 
@@ -199,7 +227,7 @@ class IronGolem extends Entity {
         const assetLoader = window.game?.gameEngine?.assetLoader;
         const ironTexture = assetLoader?.getAsset('textures/iron');
         const ironMaterial = new THREE.MeshLambertMaterial({ 
-            color: 0x607D8B,
+            color: 0xD8D1C0, // Match body color
             map: ironTexture
         });
         const handleMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Brown handle

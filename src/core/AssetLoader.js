@@ -74,7 +74,7 @@ class AssetLoader {
         this.createPlaceholderTexture('dirt', '#8D6E63'); // Brown
         this.createPlaceholderTexture('stone', '#9E9E9E'); // Gray
         this.createPlaceholderTexture('wood', '#795548'); // Dark brown
-        this.createPlaceholderTexture('iron', '#607D8B'); // Blue gray
+        this.createPlaceholderTexture('iron', '#D8D1C0'); // Light beige
         
         // Create placeholder geometries
         this.createPlaceholderGeometries();
